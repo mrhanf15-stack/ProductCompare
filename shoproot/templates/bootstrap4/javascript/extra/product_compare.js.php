@@ -1,19 +1,19 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.1.0 - JavaScript (als .js.php für Smarty-Variablen)
+   Product Compare v1.2.0 - JavaScript (als .js.php für Smarty-Variablen)
    
    Hookpoint: templates/bootstrap4/javascript/extra/
    Wird automatisch auf jeder Seite geladen.
    
-   v1.1.0 Fixes:
-   - Seedfinder-Karten: .card.product-card Selektor (statt .listingbox .card)
-   - Produkt-ID Extraktion: SEO-URL → AJAX-Lookup über Produkt-URL
-   - Produkt-ID Extraktion: meta[itemprop="sku"] als Fallback
-   - Button-Platzierung: Neben btn-info "Details ansehen" (kein card-footer nötig)
-   - MutationObserver: Beobachtet auch .product-card Elemente
+   v1.2.0 Neuer Ansatz:
+   - Buttons werden direkt in den Smarty-Templates platziert (nicht mehr per JS-Injection)
+   - Produktseite: Kleiner Merkzettel-Button wird durch Vergleichen-Button ersetzt
+   - Seedfinder-Karten: Button direkt im Template
+   - Standard-Listings: Button direkt im Template
+   - JavaScript nur noch für: AJAX-Kommunikation, Badge-Update, Toast, Button-Status
    
    @author    Mr. Hanf / Manus AI
-   @version   1.1.0
+   @version   1.2.0
    @date      2026-03-12
    -----------------------------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
             msgMaxReached: '<?php echo addslashes(defined("PC_MSG_MAX_REACHED") ? str_replace("%s", (defined("MODULE_PRODUCT_COMPARE_MAX_PRODUCTS") ? MODULE_PRODUCT_COMPARE_MAX_PRODUCTS : "6"), PC_MSG_MAX_REACHED) : "Maximale Anzahl erreicht"); ?>'
         },
         
-        // Cache: SKU → products_id Mapping (wird per AJAX gefüllt)
+        // Cache: SKU → products_id Mapping
         skuMap: {}
     };
     
@@ -61,8 +61,6 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         createToast();
         toastEl.textContent = message;
         toastEl.className = 'compare-toast ' + (type || 'info');
-        
-        // Trigger reflow
         void toastEl.offsetWidth;
         toastEl.classList.add('show');
         
@@ -96,23 +94,20 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         xhr.open('GET', url, true);
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    try {
-                        var data = JSON.parse(xhr.responseText);
-                        if (callback) callback(data);
-                    } catch(e) {
-                        console.error('ProductCompare: JSON parse error', e);
-                    }
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (callback) callback(data);
+                } catch(e) {
+                    console.error('ProductCompare: JSON parse error', e);
                 }
             }
         };
         xhr.send();
     }
     
-    // === Produkt-ID aus SKU per AJAX holen ===
+    // === SKU → products_id per AJAX auflösen ===
     function resolveProductId(sku, callback) {
-        // Prüfe Cache
         if (PC.skuMap[sku]) {
             callback(PC.skuMap[sku]);
             return;
@@ -138,99 +133,21 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         xhr.send();
     }
     
-    // === Produkt-ID aus einer Karte extrahieren ===
-    function extractProductId(card) {
-        // Methode 1: data-products-id Attribut (falls vorhanden)
-        var dataId = card.getAttribute('data-products-id');
-        if (dataId) return { type: 'id', value: dataId };
-        
-        // Methode 2: Link mit products_id= Parameter
-        var link = card.querySelector('a[href*="products_id="]');
-        if (link) {
-            var match = link.getAttribute('href').match(/products_id=(\d+)/);
-            if (match) return { type: 'id', value: match[1] };
-        }
-        
-        // Methode 3: meta itemprop="sku" (Seedfinder product-card)
-        var skuMeta = card.querySelector('meta[itemprop="sku"]');
-        if (skuMeta) {
-            var sku = skuMeta.getAttribute('content');
-            if (sku) return { type: 'sku', value: sku };
-        }
-        
-        // Methode 4: Produkt-URL aus dem Details-Button extrahieren
-        var detailsLink = card.querySelector('a.btn-info, a.btn-primary');
-        if (detailsLink) {
-            var href = detailsLink.getAttribute('href');
-            if (href) return { type: 'url', value: href };
-        }
-        
-        return null;
-    }
-    
-    // === Button erstellen ===
-    function createCompareButton(productId) {
-        var isInList = PC.currentProducts.indexOf(parseInt(productId)) !== -1;
-        
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-compare' + (isInList ? ' active' : '');
-        btn.setAttribute('data-product-id', productId);
-        btn.innerHTML = isInList 
-            ? '<span class="fa fa-check mr-1"></span>' + PC.text.added
-            : '<span class="fa fa-balance-scale mr-1"></span>' + PC.text.add;
-        
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleCompare(productId, btn);
-        });
-        
-        return btn;
-    }
-    
-    // === Button in eine Karte einfügen ===
-    function insertButton(card, btn) {
-        // Strategie 1: Neben dem "Details ansehen" Button (btn-info oder btn-primary)
-        var detailsBtn = card.querySelector('a.btn-info, a.btn-primary');
-        if (detailsBtn) {
-            var wrapper = document.createElement('div');
-            wrapper.className = 'd-flex justify-content-between align-items-center mt-2';
-            wrapper.appendChild(btn);
-            detailsBtn.parentNode.insertBefore(wrapper, detailsBtn.nextSibling);
-            return;
-        }
-        
-        // Strategie 2: In den card-footer
-        var footer = card.querySelector('.card-footer');
-        if (footer) {
-            var wrapper2 = document.createElement('div');
-            wrapper2.className = 'mt-2';
-            wrapper2.appendChild(btn);
-            footer.appendChild(wrapper2);
-            return;
-        }
-        
-        // Strategie 3: Am Ende der card-body
-        var cardBody = card.querySelector('.card-body');
-        if (cardBody) {
-            var wrapper3 = document.createElement('div');
-            wrapper3.className = 'mt-2 text-center';
-            wrapper3.appendChild(btn);
-            cardBody.appendChild(wrapper3);
-            return;
-        }
-        
-        // Strategie 4: Am Ende der Karte
-        var wrapper4 = document.createElement('div');
-        wrapper4.className = 'p-2 text-center';
-        wrapper4.appendChild(btn);
-        card.appendChild(wrapper4);
-    }
-    
-    // === Produkt hinzufügen/entfernen ===
+    // === Produkt hinzufügen/entfernen (Toggle) ===
     function toggleCompare(productId, button) {
-        var isInList = PC.currentProducts.indexOf(parseInt(productId)) !== -1;
+        // Wenn productId eine SKU ist (enthält Buchstaben), erst auflösen
+        if (isNaN(productId)) {
+            resolveProductId(productId, function(resolvedId) {
+                doToggle(resolvedId, button);
+            });
+        } else {
+            doToggle(productId, button);
+        }
+    }
+    
+    function doToggle(productId, button) {
+        productId = parseInt(productId);
+        var isInList = PC.currentProducts.indexOf(productId) !== -1;
         
         if (isInList) {
             ajaxCompare('remove', productId, function(data) {
@@ -262,7 +179,7 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         }
     }
     
-    // === Button-Status aktualisieren ===
+    // === Alle Buttons aktualisieren ===
     function updateAllButtons() {
         var buttons = document.querySelectorAll('.btn-compare[data-product-id]');
         buttons.forEach(function(btn) {
@@ -279,175 +196,69 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         });
     }
     
-    // === Buttons in Produktkarten injizieren (Seedfinder + Standard) ===
-    function injectCardButtons() {
-        // Alle Produktkarten finden:
-        // 1. Seedfinder v5+ Karten: .card.product-card
-        // 2. Seedfinder v8 Karten: .listingbox .card
-        // 3. Standard modified Karten: .productbox, .product_listing .card
-        var cards = document.querySelectorAll(
-            '.card.product-card, ' +
-            '.listingbox .card, ' +
-            '.productbox, ' +
-            '.product_listing .card'
-        );
+    // === Seedfinder-Karten: SKU-basierte Buttons initialisieren ===
+    function initSeedfinderButtons() {
+        // Seedfinder-Karten haben data-sku statt data-product-id
+        var skuButtons = document.querySelectorAll('.btn-compare[data-sku]:not([data-product-id])');
         
-        cards.forEach(function(card) {
-            // Prüfe ob schon ein Button existiert
-            if (card.querySelector('.btn-compare')) return;
+        skuButtons.forEach(function(btn) {
+            var sku = btn.getAttribute('data-sku');
+            if (!sku) return;
             
-            // Produkt-ID extrahieren
-            var idInfo = extractProductId(card);
-            if (!idInfo) return;
-            
-            if (idInfo.type === 'id') {
-                // Direkte ID verfügbar
-                var btn = createCompareButton(idInfo.value);
-                insertButton(card, btn);
+            // SKU → products_id auflösen
+            resolveProductId(sku, function(productId) {
+                btn.setAttribute('data-product-id', productId);
                 
-            } else if (idInfo.type === 'sku') {
-                // SKU → muss per AJAX aufgelöst werden
-                (function(currentCard, sku) {
-                    resolveProductId(sku, function(productId) {
-                        if (productId && !currentCard.querySelector('.btn-compare')) {
-                            var btn = createCompareButton(productId);
-                            insertButton(currentCard, btn);
-                        }
-                    });
-                })(card, idInfo.value);
-                
-            } else if (idInfo.type === 'url') {
-                // URL → muss per AJAX aufgelöst werden
-                (function(currentCard, url) {
-                    resolveProductByUrl(url, function(productId) {
-                        if (productId && !currentCard.querySelector('.btn-compare')) {
-                            var btn = createCompareButton(productId);
-                            insertButton(currentCard, btn);
-                        }
-                    });
-                })(card, idInfo.value);
-            }
-        });
-    }
-    
-    // === Produkt-ID aus URL per AJAX holen ===
-    function resolveProductByUrl(productUrl, callback) {
-        // Cache prüfen
-        if (PC.skuMap['url:' + productUrl]) {
-            callback(PC.skuMap['url:' + productUrl]);
-            return;
-        }
-        
-        var url = PC.ajaxUrl + '&sub_action=resolve_url&product_url=' + encodeURIComponent(productUrl);
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                try {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.success && data.products_id) {
-                        PC.skuMap['url:' + productUrl] = data.products_id;
-                        callback(data.products_id);
-                    }
-                } catch(e) {
-                    console.error('ProductCompare: URL resolve error', e);
+                // Prüfe ob das Produkt bereits im Vergleich ist
+                var isInList = PC.currentProducts.indexOf(parseInt(productId)) !== -1;
+                if (isInList) {
+                    btn.classList.add('active');
+                    btn.innerHTML = '<span class="fa fa-check mr-1"></span>' + PC.text.added;
                 }
-            }
-        };
-        xhr.send();
-    }
-    
-    // === Button auf Produktseite injizieren ===
-    function injectProductPageButton() {
-        var addToCartForm = document.querySelector('form[name="cart_quantity"]');
-        if (!addToCartForm) return;
-        
-        var productId = null;
-        
-        // Aus URL (products_id= Parameter)
-        var urlMatch = window.location.href.match(/products_id=(\d+)/);
-        if (urlMatch) {
-            productId = urlMatch[1];
-        }
-        
-        // Aus Formular (hidden field)
-        if (!productId) {
-            var hiddenField = addToCartForm.querySelector('input[name="products_id"]');
-            if (hiddenField) productId = hiddenField.value;
-        }
-        
-        // Aus meta-Tag auf der Seite
-        if (!productId) {
-            var skuMeta = document.querySelector('meta[itemprop="sku"]');
-            if (skuMeta) {
-                var sku = skuMeta.getAttribute('content');
-                resolveProductId(sku, function(pid) {
-                    if (pid) insertProductPageBtn(addToCartForm, pid);
-                });
-                return;
-            }
-        }
-        
-        if (!productId) return;
-        insertProductPageBtn(addToCartForm, productId);
-    }
-    
-    function insertProductPageBtn(form, productId) {
-        if (document.querySelector('.product-compare-btn-wrapper')) return;
-        
-        var isInList = PC.currentProducts.indexOf(parseInt(productId)) !== -1;
-        
-        var wrapper = document.createElement('div');
-        wrapper.className = 'product-compare-btn-wrapper d-inline-block ml-2';
-        
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-compare btn' + (isInList ? ' active' : '');
-        btn.setAttribute('data-product-id', productId);
-        btn.innerHTML = isInList
-            ? '<span class="fa fa-check mr-1"></span>' + PC.text.added
-            : '<span class="fa fa-balance-scale mr-1"></span>' + PC.text.add;
-        
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleCompare(productId, btn);
+            });
         });
+    }
+    
+    // === Button-Click-Handler (Event Delegation) ===
+    function handleCompareClick(e) {
+        var btn = e.target.closest('.btn-compare');
+        if (!btn) return;
         
-        wrapper.appendChild(btn);
+        e.preventDefault();
+        e.stopPropagation();
         
-        var cartButton = form.querySelector('button[type="submit"], input[type="submit"], .btn-cart, #cart_button');
-        if (cartButton) {
-            cartButton.parentNode.insertBefore(wrapper, cartButton.nextSibling);
-        } else {
-            form.appendChild(wrapper);
+        var productId = btn.getAttribute('data-product-id');
+        var sku = btn.getAttribute('data-sku');
+        
+        if (productId) {
+            toggleCompare(productId, btn);
+        } else if (sku) {
+            toggleCompare(sku, btn);
         }
     }
     
     // === Initialisierung ===
     function init() {
+        // Badge initialisieren
         updateBadge(PC.currentProducts.length);
         
-        // Buttons injizieren
-        injectCardButtons();
-        injectProductPageButton();
+        // Initiale Button-Status setzen
+        updateAllButtons();
         
-        // MutationObserver für dynamisch geladene Inhalte (Seedfinder AJAX/Pagination)
+        // Seedfinder SKU-Buttons auflösen
+        initSeedfinderButtons();
+        
+        // Event Delegation für alle Vergleichen-Buttons
+        document.addEventListener('click', handleCompareClick);
+        
+        // MutationObserver für dynamisch geladene Seedfinder-Karten (AJAX/Pagination)
         var observer = new MutationObserver(function(mutations) {
             var shouldUpdate = false;
             mutations.forEach(function(mutation) {
                 if (mutation.addedNodes.length > 0) {
                     mutation.addedNodes.forEach(function(node) {
                         if (node.nodeType === 1 && (
-                            node.classList && (
-                                node.classList.contains('listingbox') ||
-                                node.classList.contains('product-card') ||
-                                node.classList.contains('col-md-6') ||
-                                node.classList.contains('row')
-                            ) || node.querySelector && (
-                                node.querySelector('.product-card') ||
-                                node.querySelector('.listingbox')
-                            )
+                            (node.querySelector && node.querySelector('.btn-compare'))
                         )) {
                             shouldUpdate = true;
                         }
@@ -456,13 +267,13 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
             });
             if (shouldUpdate) {
                 setTimeout(function() {
-                    injectCardButtons();
+                    initSeedfinderButtons();
+                    updateAllButtons();
                 }, 200);
             }
         });
         
         var mainContent = document.getElementById('products-container') || 
-                          document.querySelector('.main-content') ||
                           document.querySelector('#content') ||
                           document.body;
         
