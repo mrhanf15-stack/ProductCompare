@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.2.1 - AJAX Endpoint
+   Product Compare v1.2.2 - AJAX Endpoint
    
    Hookpoint: includes/extra/ajax/
    
@@ -16,7 +16,7 @@
    - resolve_url: SEO-URL → products_id auflösen
    
    @author    Mr. Hanf / Manus AI
-   @version   1.2.1
+   @version   1.2.2
    @date      2026-03-12
    -----------------------------------------------------------------------------------------*/
 

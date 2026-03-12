@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.2.1 - JavaScript (als .js.php für Smarty-Variablen)
+   Product Compare v1.2.2 - JavaScript (als .js.php für Smarty-Variablen)
    
    Hookpoint: templates/bootstrap4/javascript/extra/
    Wird automatisch auf jeder Seite geladen.
@@ -13,20 +13,20 @@
    - JavaScript nur noch für: AJAX-Kommunikation, Badge-Update, Toast, Button-Status
    
    @author    Mr. Hanf / Manus AI
-   @version   1.2.1
+   @version   1.2.2
    @date      2026-03-12
    -----------------------------------------------------------------------------------------*/
 
 if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS == 'true'):
 ?>
-<link rel="stylesheet" href="templates/bootstrap4/css/product_compare.css">
+<link rel="stylesheet" href="<?php echo (defined('DIR_WS_CATALOG') ? DIR_WS_CATALOG : '/'); ?>templates/bootstrap4/css/product_compare.css">
 <script>
 (function() {
     'use strict';
     
     // === Konfiguration ===
     var PC = {
-        ajaxUrl: 'ajax.php?ext=product_compare',
+        ajaxUrl: '<?php echo (defined('DIR_WS_CATALOG') ? DIR_WS_CATALOG : '/'); ?>ajax.php?ext=product_compare',
         compareUrl: '<?php echo xtc_href_link("product_compare.php"); ?>',
         maxProducts: <?php echo (defined('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS') ? (int)MODULE_PRODUCT_COMPARE_MAX_PRODUCTS : 6); ?>,
         currentProducts: <?php echo json_encode(isset($_SESSION['product_compare']) ? array_values($_SESSION['product_compare']) : array()); ?>,
