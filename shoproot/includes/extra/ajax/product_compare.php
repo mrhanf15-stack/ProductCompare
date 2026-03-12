@@ -1,8 +1,11 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.1.0 - AJAX Endpoint
+   Product Compare v1.2.1 - AJAX Endpoint
    
    Hookpoint: includes/extra/ajax/
+   
+   modified eCommerce lädt diese Datei über ajax.php?ext=product_compare
+   Die ajax.php inkludiert die Datei direkt und ruft dann die Funktion product_compare() auf.
    
    Verarbeitet AJAX-Anfragen für den Produktvergleich:
    - add: Produkt zur Vergleichsliste hinzufügen
@@ -12,19 +15,13 @@
    - resolve_sku: SKU/Artikelnummer → products_id auflösen
    - resolve_url: SEO-URL → products_id auflösen
    
-   v1.1.0: resolve_sku und resolve_url hinzugefügt für Seedfinder-Karten
-   
    @author    Mr. Hanf / Manus AI
-   @version   1.1.0
+   @version   1.2.1
    @date      2026-03-12
    -----------------------------------------------------------------------------------------*/
 
-if (isset($_GET['action']) && $_GET['action'] == 'product_compare') {
-    
-    // Session starten falls nötig
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+// modified eCommerce ajax.php ruft die Funktion mit dem gleichen Namen wie die Datei auf
+function product_compare() {
     
     // Vergleichsliste initialisieren
     if (!isset($_SESSION['product_compare'])) {
@@ -118,7 +115,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'product_compare') {
             }
             break;
         
-        // === NEU v1.1.0: SKU → products_id auflösen ===
+        // SKU → products_id auflösen (für Seedfinder-Karten)
         case 'resolve_sku':
             $sku = isset($_GET['sku']) ? trim($_GET['sku']) : '';
             if (!empty($sku)) {
@@ -140,28 +137,20 @@ if (isset($_GET['action']) && $_GET['action'] == 'product_compare') {
             }
             break;
         
-        // === NEU v1.1.0: SEO-URL → products_id auflösen ===
+        // SEO-URL → products_id auflösen
         case 'resolve_url':
             $product_url = isset($_GET['product_url']) ? trim($_GET['product_url']) : '';
             if (!empty($product_url)) {
-                // URL-Pfad extrahieren (nur den letzten Teil)
                 $url_parts = parse_url($product_url);
                 $path = isset($url_parts['path']) ? $url_parts['path'] : '';
-                
-                // Letztes Segment der URL = SEO-URL-Slug
                 $path = rtrim($path, '/');
                 $segments = explode('/', $path);
                 $slug = end($segments);
                 
                 if (!empty($slug)) {
-                    // In der SEO-URL-Tabelle suchen (modified eCommerce)
-                    // Tabelle: seo_url oder url_rewrite
                     $found = false;
                     
-                    // Methode 1: Suche in products_description nach SEO-URL
-                    // modified eCommerce speichert SEO-URLs in verschiedenen Tabellen
-                    
-                    // Versuche zuerst die products_seo Tabelle (falls vorhanden)
+                    // Methode 1: products_seo Tabelle
                     $seo_query = @xtc_db_query(
                         "SELECT products_id FROM products_seo 
                          WHERE url_text = '" . xtc_db_input($slug) . "' 
@@ -174,7 +163,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'product_compare') {
                         $found = true;
                     }
                     
-                    // Methode 2: Suche in der URL-Alias Tabelle
+                    // Methode 2: URL-Alias Tabelle
                     if (!$found) {
                         $alias_query = @xtc_db_query(
                             "SELECT url_id FROM url_alias 
@@ -190,7 +179,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'product_compare') {
                         }
                     }
                     
-                    // Methode 3: Suche über products_model (Artikelnummer im Slug)
+                    // Methode 3: products_model
                     if (!$found) {
                         $model_query = xtc_db_query(
                             "SELECT products_id FROM " . TABLE_PRODUCTS . " 
@@ -206,9 +195,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'product_compare') {
                         }
                     }
                     
-                    // Methode 4: Suche über products_description (Produktname als Slug)
+                    // Methode 4: products_name
                     if (!$found) {
-                        // Slug zu Produktname konvertieren (Bindestriche → Leerzeichen)
                         $search_name = str_replace('-', ' ', $slug);
                         $name_query = xtc_db_query(
                             "SELECT p.products_id 
@@ -247,8 +235,6 @@ if (isset($_GET['action']) && $_GET['action'] == 'product_compare') {
     $response['count'] = count($_SESSION['product_compare']);
     $response['products'] = array_values($_SESSION['product_compare']);
     
-    header('Content-Type: application/json');
-    echo json_encode($response);
-    exit();
+    return $response;
 }
 ?>
