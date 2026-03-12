@@ -1,34 +1,33 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.2.2 - AJAX Endpoint
+   Product Compare v1.2.3 - AJAX Endpoint
    
    Hookpoint: includes/extra/ajax/
    
-   modified eCommerce lädt diese Datei über ajax.php?ext=product_compare
-   Die ajax.php inkludiert die Datei direkt und ruft dann die Funktion product_compare() auf.
+   modified eCommerce loads this file via ajax.php?ext=product_compare
+   ajax.php then calls function product_compare() and expects an array return.
    
-   Verarbeitet AJAX-Anfragen für den Produktvergleich:
-   - add: Produkt zur Vergleichsliste hinzufügen
-   - remove: Produkt aus der Vergleichsliste entfernen
-   - clear: Vergleichsliste leeren
-   - list: Aktuelle Vergleichsliste zurückgeben
-   - resolve_sku: SKU/Artikelnummer → products_id auflösen
-   - resolve_url: SEO-URL → products_id auflösen
+   Actions (via sub_action parameter):
+   - add: Add product to compare list
+   - remove: Remove product from compare list
+   - clear: Clear compare list
+   - list: Return current compare list
+   - resolve_sku: Resolve SKU/model to products_id
+   - resolve_url: Resolve SEO-URL to products_id
    
    @author    Mr. Hanf / Manus AI
-   @version   1.2.2
+   @version   1.2.3
    @date      2026-03-12
    -----------------------------------------------------------------------------------------*/
 
-// modified eCommerce ajax.php ruft die Funktion mit dem gleichen Namen wie die Datei auf
 function product_compare() {
     
-    // Vergleichsliste initialisieren
+    // Init compare list in session
     if (!isset($_SESSION['product_compare'])) {
         $_SESSION['product_compare'] = array();
     }
     
-    // Maximale Anzahl Produkte
+    // Max products
     $max_products = (defined('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS')) 
         ? (int)MODULE_PRODUCT_COMPARE_MAX_PRODUCTS 
         : 6;
@@ -115,7 +114,7 @@ function product_compare() {
             }
             break;
         
-        // SKU → products_id auflösen (für Seedfinder-Karten)
+        // Resolve SKU to products_id (for Seedfinder cards)
         case 'resolve_sku':
             $sku = isset($_GET['sku']) ? trim($_GET['sku']) : '';
             if (!empty($sku)) {
@@ -137,7 +136,7 @@ function product_compare() {
             }
             break;
         
-        // SEO-URL → products_id auflösen
+        // Resolve SEO-URL to products_id
         case 'resolve_url':
             $product_url = isset($_GET['product_url']) ? trim($_GET['product_url']) : '';
             if (!empty($product_url)) {
@@ -150,7 +149,7 @@ function product_compare() {
                 if (!empty($slug)) {
                     $found = false;
                     
-                    // Methode 1: products_seo Tabelle
+                    // Method 1: products_seo table
                     $seo_query = @xtc_db_query(
                         "SELECT products_id FROM products_seo 
                          WHERE url_text = '" . xtc_db_input($slug) . "' 
@@ -163,7 +162,7 @@ function product_compare() {
                         $found = true;
                     }
                     
-                    // Methode 2: URL-Alias Tabelle
+                    // Method 2: url_alias table
                     if (!$found) {
                         $alias_query = @xtc_db_query(
                             "SELECT url_id FROM url_alias 
@@ -179,7 +178,7 @@ function product_compare() {
                         }
                     }
                     
-                    // Methode 3: products_model
+                    // Method 3: products_model
                     if (!$found) {
                         $model_query = xtc_db_query(
                             "SELECT products_id FROM " . TABLE_PRODUCTS . " 
@@ -195,7 +194,7 @@ function product_compare() {
                         }
                     }
                     
-                    // Methode 4: products_name
+                    // Method 4: products_name
                     if (!$found) {
                         $search_name = str_replace('-', ' ', $slug);
                         $name_query = xtc_db_query(
@@ -231,10 +230,9 @@ function product_compare() {
             break;
     }
     
-    // Aktualisierte Werte
+    // Update counts
     $response['count'] = count($_SESSION['product_compare']);
     $response['products'] = array_values($_SESSION['product_compare']);
     
     return $response;
 }
-?>
