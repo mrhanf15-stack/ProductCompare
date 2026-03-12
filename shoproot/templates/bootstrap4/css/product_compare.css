@@ -1,0 +1,343 @@
+/* -----------------------------------------------------------------------------------------
+   Product Compare v1.0.0 - Stylesheet
+   
+   @author    Mr. Hanf / Manus AI
+   @version   1.0.0
+   @date      2026-03-12
+   -----------------------------------------------------------------------------------------*/
+
+/* === Floating Compare Badge === */
+.product-compare-badge {
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    z-index: 1050;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.product-compare-badge.active {
+    display: block;
+}
+
+.product-compare-badge .compare-badge-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #28a745;
+    color: #fff;
+    font-size: 1.4rem;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.product-compare-badge .compare-badge-link:hover {
+    background: #218838;
+    transform: scale(1.1);
+    color: #fff;
+    text-decoration: none;
+}
+
+.product-compare-badge .compare-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #dc3545;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* === Compare Button in Produktkarten === */
+.btn-compare {
+    background: transparent;
+    border: 1px solid #6c757d;
+    color: #6c757d;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-compare:hover {
+    background: #28a745;
+    border-color: #28a745;
+    color: #fff;
+}
+
+.btn-compare.active {
+    background: #28a745;
+    border-color: #28a745;
+    color: #fff;
+}
+
+.btn-compare.active:hover {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-compare .fa {
+    font-size: 0.9rem;
+}
+
+/* === Compare Button auf Produktseite === */
+.product-compare-btn-wrapper {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.product-compare-btn-wrapper .btn-compare {
+    padding: 8px 16px;
+    font-size: 1rem;
+}
+
+/* === Vergleichsseite === */
+.product-compare-page h1 {
+    font-size: 1.5rem;
+}
+
+/* Vergleichstabelle */
+.table-compare {
+    table-layout: fixed;
+}
+
+.table-compare .compare-label-cell {
+    width: 160px;
+    min-width: 160px;
+    background: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.9rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table-compare .compare-product-cell {
+    min-width: 180px;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+/* Produktbilder in Tabelle */
+.compare-product-image {
+    max-height: 150px;
+    width: auto;
+    max-width: 100%;
+}
+
+.compare-product-name {
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 0;
+}
+
+/* Entfernen-Button oben rechts */
+.compare-remove-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #dc3545;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    text-decoration: none;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.compare-remove-btn:hover {
+    background: #c82333;
+    color: #fff;
+    text-decoration: none;
+    transform: scale(1.1);
+}
+
+/* Tags in Vergleichstabelle */
+.compare-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.compare-tag {
+    font-size: 0.8rem;
+    font-weight: 400;
+    padding: 3px 8px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    display: inline-flex;
+    align-items: center;
+}
+
+.compare-tag-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+/* Preiszeile hervorheben */
+.compare-row-price td {
+    background: #f0fff4;
+}
+
+/* Aktionszeile */
+.compare-row-actions td {
+    padding: 12px 8px;
+}
+
+/* === Toast-Benachrichtigung === */
+.compare-toast {
+    position: fixed;
+    bottom: 145px;
+    left: 20px;
+    z-index: 1060;
+    background: #333;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    max-width: 300px;
+}
+
+.compare-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.compare-toast.success {
+    background: #28a745;
+}
+
+.compare-toast.error {
+    background: #dc3545;
+}
+
+.compare-toast.info {
+    background: #17a2b8;
+}
+
+/* === Mini-Vorschau im Badge (Hover) === */
+.compare-badge-preview {
+    position: absolute;
+    bottom: 65px;
+    left: 0;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 10px;
+    min-width: 220px;
+    display: none;
+    z-index: 1051;
+}
+
+.product-compare-badge:hover .compare-badge-preview {
+    display: block;
+}
+
+.compare-badge-preview .preview-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.8rem;
+}
+
+.compare-badge-preview .preview-item:last-child {
+    border-bottom: none;
+}
+
+.compare-badge-preview .preview-item img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    margin-right: 8px;
+}
+
+.compare-badge-preview .preview-actions {
+    margin-top: 8px;
+    text-align: center;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .product-compare-badge {
+        bottom: 70px;
+        left: 15px;
+    }
+    
+    .product-compare-badge .compare-badge-link {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+    }
+    
+    .compare-toast {
+        bottom: 125px;
+        left: 15px;
+        right: 15px;
+        max-width: none;
+    }
+    
+    .table-compare .compare-label-cell {
+        width: 120px;
+        min-width: 120px;
+        font-size: 0.8rem;
+    }
+    
+    .table-compare .compare-product-cell {
+        min-width: 150px;
+    }
+    
+    .compare-product-image {
+        max-height: 100px;
+    }
+    
+    .compare-product-name {
+        font-size: 0.85rem;
+    }
+    
+    .btn-compare {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .product-compare-badge {
+        bottom: 65px;
+        left: 10px;
+    }
+    
+    .product-compare-badge .compare-badge-link {
+        width: 44px;
+        height: 44px;
+        font-size: 1rem;
+    }
+}
