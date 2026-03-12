@@ -14,9 +14,10 @@
 
 require('includes/application_top.php');
 
-// Sprachdatei laden
-if (file_exists(DIR_FS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php')) {
-    require_once(DIR_FS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php');
+// Sprachdatei laden - DIR_WS_LANGUAGES ist die korrekte Konstante (definiert in includes/paths.php)
+$pc_lang_file = DIR_WS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php';
+if (file_exists($pc_lang_file)) {
+    require_once($pc_lang_file);
 }
 
 // Session initialisieren
