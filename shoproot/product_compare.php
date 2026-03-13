@@ -150,6 +150,9 @@ if (!empty($_SESSION['product_compare'])) {
 // Sort filter names
 asort($all_filter_names);
 
+// include header (loads template framework, navigation, CSS)
+require(DIR_WS_INCLUDES . 'header.php');
+
 // Smarty assignments
 $smarty->assign('COMPARE_PRODUCTS', $compare_products);
 $smarty->assign('COMPARE_COUNT', count($compare_products));
