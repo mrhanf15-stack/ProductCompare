@@ -1,25 +1,29 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.0 - Comparison Page (Original Listing Design)
+   Product Compare v1.7.1 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
    the SAME Smarty variables as product_listing_include.html.
    
    Flow follows the same pattern as seedfinder.php:
-   1. require application_top.php (creates $smarty)
-   2. Page logic (load products, assign variables)
+   1. require application_top.php
+   2. $smarty = new Smarty (required!)
+   3. Page logic (load products, assign variables)
    3. $main_content = $smarty->fetch(template)
    4. require header.php (loads ALL box modules: cart, wishlist, search, etc.)
    5. $smarty->display(index.html)
    6. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.0
+   @version   1.7.1
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
 require('includes/application_top.php');
+
+// Create Smarty instance (required - application_top does NOT create it)
+$smarty = new Smarty;
 
 // Load language file
 $pc_lang_file = DIR_WS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php';
