@@ -1,31 +1,23 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.0.0 - Vergleichsseite
-   
-   Eigene Seite: product_compare.php im shoproot
-   
-   Zeigt die ausgewählten Produkte nebeneinander in einer Vergleichstabelle
-   mit allen Artikelmerkmalen (products_tags).
-   
-   @author    Mr. Hanf / Manus AI
-   @version   1.0.0
-   @date      2026-03-12
+   Product Compare v1.3.0 - Comparison Page
+   File: product_compare.php (shoproot)
    -----------------------------------------------------------------------------------------*/
 
 require('includes/application_top.php');
 
-// Sprachdatei laden - DIR_WS_LANGUAGES ist die korrekte Konstante (definiert in includes/paths.php)
+// Load language file
 $pc_lang_file = DIR_WS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php';
 if (file_exists($pc_lang_file)) {
     require_once($pc_lang_file);
 }
 
-// Session initialisieren
+// Init session
 if (!isset($_SESSION['product_compare'])) {
     $_SESSION['product_compare'] = array();
 }
 
-// Aktion: Produkt entfernen
+// Action: remove product
 if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['products_id'])) {
     $remove_id = (int)$_GET['products_id'];
     $key = array_search($remove_id, $_SESSION['product_compare']);
@@ -36,18 +28,19 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['produc
     xtc_redirect(xtc_href_link('product_compare.php'));
 }
 
-// Aktion: Liste leeren
+// Action: clear list
 if (isset($_GET['action']) && $_GET['action'] == 'clear') {
     $_SESSION['product_compare'] = array();
     xtc_redirect(xtc_href_link('product_compare.php'));
 }
 
 // Breadcrumb
-$breadcrumb->add(defined('PC_PAGE_TITLE') ? PC_PAGE_TITLE : 'Produktvergleich', xtc_href_link('product_compare.php'));
+$bc_title = defined('PC_PAGE_TITLE') ? PC_PAGE_TITLE : 'Produktvergleich';
+$breadcrumb->add($bc_title, xtc_href_link('product_compare.php'));
 
-// Produkte laden
+// Load products
 $compare_products = array();
-$all_filter_names = array(); // Alle vorkommenden Filter-Namen sammeln
+$all_filter_names = array();
 
 if (!empty($_SESSION['product_compare'])) {
     foreach ($_SESSION['product_compare'] as $pid) {
@@ -64,28 +57,34 @@ if (!empty($_SESSION['product_compare'])) {
                 AND pd.language_id = '" . (int)$_SESSION['languages_id'] . "'
                 AND p.products_status = 1"
         );
-        
+
         if ($product = xtc_db_fetch_array($product_query)) {
-            // Preis berechnen
+            // Price
             $tax_rate = xtc_get_tax_rate($product['products_tax_class_id']);
-            if ($_SESSION['customers_status']['customers_status_show_price_tax'] == 1) {
+            if (isset($_SESSION['customers_status']['customers_status_show_price_tax']) 
+                && $_SESSION['customers_status']['customers_status_show_price_tax'] == 1) {
                 $price_display = $product['products_price'] * (1 + $tax_rate / 100);
             } else {
                 $price_display = $product['products_price'];
             }
-            $formatted_price = $xtPrice->xtcFormat($price_display, true);
-            
-            // Bild
+            $formatted_price = '';
+            if (isset($xtPrice) && is_object($xtPrice) && method_exists($xtPrice, 'xtcFormat')) {
+                $formatted_price = $xtPrice->xtcFormat($price_display, true);
+            } else {
+                $formatted_price = number_format($price_display, 2, ',', '.') . ' EUR';
+            }
+
+            // Image
             $image = '';
             if (!empty($product['products_image'])) {
                 $image = DIR_WS_IMAGES . 'product_images/thumbnail_images/' . $product['products_image'];
             }
-            
-            // Link
+
+            // Links
             $link = xtc_href_link(FILENAME_PRODUCT_INFO, 'products_id=' . $pid);
             $remove_link = xtc_href_link('product_compare.php', 'action=remove&products_id=' . $pid);
-            
-            // Filter-Eigenschaften laden (products_tags)
+
+            // Filter properties (products_tags)
             $filter_properties = array();
             $tags_query = xtc_db_query(
                 "SELECT DISTINCT pto.options_name, pto.options_id, pto.sort_order as opt_sort,
@@ -99,20 +98,18 @@ if (!empty($_SESSION['product_compare'])) {
                     AND ptv.languages_id = '" . (int)$_SESSION['languages_id'] . "'
                ORDER BY pto.sort_order, ptv.sort_order"
             );
-            
+
             while ($tag = xtc_db_fetch_array($tags_query)) {
                 $filter_name = $tag['options_name'];
-                
-                // Sammle alle Filter-Namen für die Tabelle
+
                 if (!isset($all_filter_names[$filter_name])) {
                     $all_filter_names[$filter_name] = $tag['opt_sort'];
                 }
-                
-                // Werte pro Filter gruppieren
+
                 if (!isset($filter_properties[$filter_name])) {
                     $filter_properties[$filter_name] = array();
                 }
-                
+
                 $value_image_url = '';
                 if (!empty($tag['values_image'])) {
                     if (strpos($tag['values_image'], 'http') === 0) {
@@ -121,14 +118,14 @@ if (!empty($_SESSION['product_compare'])) {
                         $value_image_url = DIR_WS_CATALOG . 'images/tags/' . $tag['values_image'];
                     }
                 }
-                
+
                 $filter_properties[$filter_name][] = array(
                     'name' => $tag['values_name'],
                     'description' => $tag['values_description'],
                     'image' => $value_image_url
                 );
             }
-            
+
             $compare_products[] = array(
                 'PRODUCTS_ID' => $pid,
                 'PRODUCTS_NAME' => $product['products_name'],
@@ -147,10 +144,10 @@ if (!empty($_SESSION['product_compare'])) {
     }
 }
 
-// Filter-Namen sortieren nach sort_order
+// Sort filter names
 asort($all_filter_names);
 
-// Smarty-Zuweisungen
+// Smarty assignments
 $smarty->assign('COMPARE_PRODUCTS', $compare_products);
 $smarty->assign('COMPARE_COUNT', count($compare_products));
 $smarty->assign('COMPARE_MAX', (defined('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS') ? (int)MODULE_PRODUCT_COMPARE_MAX_PRODUCTS : 6));
@@ -158,10 +155,10 @@ $smarty->assign('ALL_FILTER_NAMES', array_keys($all_filter_names));
 $smarty->assign('CLEAR_LINK', xtc_href_link('product_compare.php', 'action=clear'));
 $smarty->assign('SHOP_LINK', xtc_href_link(FILENAME_DEFAULT));
 
-// Texte
+// Text assignments
 $smarty->assign('PC_PAGE_TITLE', defined('PC_PAGE_TITLE') ? PC_PAGE_TITLE : 'Produktvergleich');
-$smarty->assign('PC_EMPTY_TEXT', defined('PC_EMPTY_TEXT') ? PC_EMPTY_TEXT : 'Keine Produkte zum Vergleichen ausgewählt.');
-$smarty->assign('PC_EMPTY_HINT', defined('PC_EMPTY_HINT') ? PC_EMPTY_HINT : 'Fügen Sie Produkte über den Vergleichen-Button auf den Produktseiten hinzu.');
+$smarty->assign('PC_EMPTY_TEXT', defined('PC_EMPTY_TEXT') ? PC_EMPTY_TEXT : 'Keine Produkte zum Vergleichen.');
+$smarty->assign('PC_EMPTY_HINT', defined('PC_EMPTY_HINT') ? PC_EMPTY_HINT : 'Produkte ueber den Vergleichen-Button hinzufuegen.');
 $smarty->assign('PC_CLEAR_BUTTON', defined('PC_CLEAR_BUTTON') ? PC_CLEAR_BUTTON : 'Liste leeren');
 $smarty->assign('PC_BACK_BUTTON', defined('PC_BACK_BUTTON') ? PC_BACK_BUTTON : 'Weiter einkaufen');
 $smarty->assign('PC_REMOVE_BUTTON', defined('PC_REMOVE_BUTTON') ? PC_REMOVE_BUTTON : 'Entfernen');
@@ -171,12 +168,12 @@ $smarty->assign('PC_ROW_PRODUCT', defined('PC_ROW_PRODUCT') ? PC_ROW_PRODUCT : '
 $smarty->assign('PC_ROW_MANUFACTURER', defined('PC_ROW_MANUFACTURER') ? PC_ROW_MANUFACTURER : 'Hersteller');
 $smarty->assign('PC_ROW_PRICE', defined('PC_ROW_PRICE') ? PC_ROW_PRICE : 'Preis');
 $smarty->assign('PC_ROW_WEIGHT', defined('PC_ROW_WEIGHT') ? PC_ROW_WEIGHT : 'Gewicht');
-$smarty->assign('PC_ROW_AVAILABILITY', defined('PC_ROW_AVAILABILITY') ? PC_ROW_AVAILABILITY : 'Verfügbarkeit');
+$smarty->assign('PC_ROW_AVAILABILITY', defined('PC_ROW_AVAILABILITY') ? PC_ROW_AVAILABILITY : 'Verfuegbarkeit');
 $smarty->assign('PC_IN_STOCK', defined('PC_IN_STOCK') ? PC_IN_STOCK : 'Auf Lager');
-$smarty->assign('PC_OUT_OF_STOCK', defined('PC_OUT_OF_STOCK') ? PC_OUT_OF_STOCK : 'Nicht verfügbar');
+$smarty->assign('PC_OUT_OF_STOCK', defined('PC_OUT_OF_STOCK') ? PC_OUT_OF_STOCK : 'Nicht verfuegbar');
 $smarty->assign('PC_NO_DATA', defined('PC_NO_DATA') ? PC_NO_DATA : '-');
 
-// Template laden
+// Template
 $smarty->assign('language', $_SESSION['language']);
 $smarty->caching = false;
 
