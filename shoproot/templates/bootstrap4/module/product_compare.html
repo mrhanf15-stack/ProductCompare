@@ -22,6 +22,10 @@
       <small class="text-muted ml-2">({$COMPARE_COUNT} {if $COMPARE_COUNT == 1}Produkt{else}Produkte{/if})</small>
     {/if}
   </h1>
+
+  {* SEO Content: Einleitung *}
+  {include file="module/product_compare_intro.html"}
+
   
   {* === contentAnywhere: Top Content Block === *}
   {* Ersetze die Content-ID (z.B. 99) mit der gewuenschten coID aus dem Content Manager *}
@@ -146,6 +150,9 @@
     
   {/if}
   
+    {* SEO Content: Hauptteil *}
+  {include file="module/product_compare_main.html"}
+
   {* === contentAnywhere: Bottom Content Block === *}
   {* Ersetze die Content-ID (z.B. 100) mit der gewuenschten coID aus dem Content Manager *}
   {* Beispiel: {100|contentAnywhere|inserttags} *}

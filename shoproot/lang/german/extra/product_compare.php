@@ -8,9 +8,9 @@
    -----------------------------------------------------------------------------------------*/
 
 // Seite
-define('PC_PAGE_TITLE', 'Produktvergleich');
-define('PC_META_TITLE', 'Produktvergleich - Produkte vergleichen');
-define('PC_META_DESCRIPTION', 'Vergleichen Sie Ihre ausgewählten Produkte direkt miteinander.');
+define('PC_PAGE_TITLE', 'Cannabis Samen Vergleich: Finde die perfekte Sorte für dich');
+define('PC_META_TITLE', 'Cannabis Samen Vergleich 2026 – Die besten Sorten finden');
+define('PC_META_DESCRIPTION', 'Du suchst die besten Cannabis Samen? Vergleiche über 1.000 Sorten nach THC, CBD, Genetik & Wirkung. Finde jetzt deinen Favoriten für den Anbau 2026!');
 
 // Leere Liste
 define('PC_EMPTY_TEXT', 'Keine Produkte zum Vergleichen ausgewählt.');
