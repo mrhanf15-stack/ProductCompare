@@ -1,9 +1,11 @@
 /* =========================================================================
-   Product Compare v1.8.0 - CSS
+   Product Compare v1.8.1 - CSS
    3-Column Card Layout - Aligned cards with fixed sections
    - Images: position absolute + object-fit cover for FORCED equal height
-   - Badge: right-bottom position (away from Trusted Shops widget)
+   - Badge: Position via pc-pos-* classes (configurable in Admin)
+   - Badge: Colors via inline styles (configurable in Admin)
    - Listing button: same style as cart/wishlist buttons
+   v1.8.1: Badge-Position per Admin-Klasse, Farben per Inline-Style
    v1.8.0: h3-Syntaxfehler behoben, Tabellenhoehe 550px, Titel 1.45rem,
            Meta-Tags Fix, Badge-Position mit !important
    ========================================================================= */
@@ -58,9 +60,6 @@
 }
 
 /* === Product Image - FORCED Fixed Height with position absolute === */
-/* The <a> tag has Bootstrap .card-body which sets flex:1 1 auto and padding.
-   We override everything to create a fixed-height container with the image
-   absolutely positioned inside, guaranteeing ALL images fill the box. */
 .product-compare-page .compare-img-box {
     position: relative !important;
     height: 220px !important;
@@ -134,13 +133,9 @@
     display: none !important;
 }
 
-/* === Floating Compare Badge === */
+/* === Floating Compare Badge - Base === */
 .product-compare-badge {
     position: fixed !important;
-    bottom: 80px !important;
-    right: 20px !important;
-    top: auto !important;
-    left: auto !important;
     z-index: 1050;
     display: none;
     transition: all 0.3s ease;
@@ -148,6 +143,34 @@
 .product-compare-badge.active {
     display: block;
 }
+
+/* === Badge Position Classes (set by Admin) === */
+.product-compare-badge.pc-pos-bottom-right {
+    bottom: 80px !important;
+    right: 20px !important;
+    top: auto !important;
+    left: auto !important;
+}
+.product-compare-badge.pc-pos-bottom-left {
+    bottom: 80px !important;
+    left: 20px !important;
+    top: auto !important;
+    right: auto !important;
+}
+.product-compare-badge.pc-pos-top-right {
+    top: 80px !important;
+    right: 20px !important;
+    bottom: auto !important;
+    left: auto !important;
+}
+.product-compare-badge.pc-pos-top-left {
+    top: 80px !important;
+    left: 20px !important;
+    bottom: auto !important;
+    right: auto !important;
+}
+
+/* === Badge Link (colors set via inline styles from Admin) === */
 .product-compare-badge .compare-badge-link {
     display: flex;
     align-items: center;
@@ -155,8 +178,6 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #28a745;
-    color: #fff;
     font-size: 1.4rem;
     text-decoration: none;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -164,17 +185,15 @@
     transition: all 0.3s ease;
 }
 .product-compare-badge .compare-badge-link:hover {
-    background: #218838;
     transform: scale(1.1);
-    color: #fff;
     text-decoration: none;
 }
+
+/* === Badge Count (colors set via inline styles from Admin) === */
 .product-compare-badge .compare-count {
     position: absolute;
     top: -5px;
     right: -5px;
-    background: #dc3545;
-    color: #fff;
     font-size: 0.75rem;
     font-weight: 700;
     width: 22px;
@@ -260,6 +279,18 @@
     display: none;
     z-index: 1051;
 }
+/* Preview position adjustments for left-side badges */
+.product-compare-badge.pc-pos-bottom-left .compare-badge-preview,
+.product-compare-badge.pc-pos-top-left .compare-badge-preview {
+    right: auto;
+    left: 0;
+}
+/* Preview position adjustments for top-side badges */
+.product-compare-badge.pc-pos-top-right .compare-badge-preview,
+.product-compare-badge.pc-pos-top-left .compare-badge-preview {
+    bottom: auto;
+    top: 65px;
+}
 .product-compare-badge:hover .compare-badge-preview {
     display: block;
 }
@@ -300,9 +331,22 @@
         height: auto;
         max-height: 300px;
     }
-    .product-compare-badge {
+    /* Responsive badge positions */
+    .product-compare-badge.pc-pos-bottom-right {
         bottom: 70px !important;
         right: 15px !important;
+    }
+    .product-compare-badge.pc-pos-bottom-left {
+        bottom: 70px !important;
+        left: 15px !important;
+    }
+    .product-compare-badge.pc-pos-top-right {
+        top: 70px !important;
+        right: 15px !important;
+    }
+    .product-compare-badge.pc-pos-top-left {
+        top: 70px !important;
+        left: 15px !important;
     }
     .product-compare-badge .compare-badge-link {
         width: 48px;
@@ -338,9 +382,21 @@
 }
 
 @media (max-width: 576px) {
-    .product-compare-badge {
+    .product-compare-badge.pc-pos-bottom-right {
         bottom: 65px !important;
         right: 10px !important;
+    }
+    .product-compare-badge.pc-pos-bottom-left {
+        bottom: 65px !important;
+        left: 10px !important;
+    }
+    .product-compare-badge.pc-pos-top-right {
+        top: 65px !important;
+        right: 10px !important;
+    }
+    .product-compare-badge.pc-pos-top-left {
+        top: 65px !important;
+        left: 10px !important;
     }
     .product-compare-badge .compare-badge-link {
         width: 44px;
