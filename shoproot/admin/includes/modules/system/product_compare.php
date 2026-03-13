@@ -1,17 +1,18 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.8 - Admin System Module
+   Product Compare v1.7.9 - Admin System Module
    
    Pfad: admin/includes/modules/system/product_compare.php
    
    Konfiguration des Produktvergleich-Moduls im Admin-Bereich.
    Admin > Module > System Module > Produktvergleich
    
+   v1.7.9: Sitemap-Option entfernt (wird extern verwaltet)
    v1.7.8: Auto-Update - fehlende Konfigurationsfelder werden automatisch angelegt
-   v1.7.7: Meta-Titel, Meta-Description und Sitemap-URL hinzugefuegt
+   v1.7.7: Meta-Titel, Meta-Description hinzugefuegt
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.8
+   @version   1.7.9
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
@@ -28,7 +29,6 @@ class product_compare {
         $this->enabled = (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS == 'true') ? true : false;
         
         // Auto-Update: Fehlende Konfigurationsfelder automatisch anlegen
-        // Wird nur ausgefuehrt wenn das Modul bereits installiert ist
         if ($this->enabled || (defined('MODULE_PRODUCT_COMPARE_STATUS'))) {
             $this->_auto_update();
         }
@@ -39,7 +39,6 @@ class product_compare {
      * So muss bei Updates kein manuelles SQL ausgefuehrt werden.
      */
     function _auto_update() {
-        // Alle Felder die existieren muessen (key => default insert query)
         $required_fields = array(
             'MODULE_PRODUCT_COMPARE_META_TITLE' => array(
                 'value' => 'Produktvergleich - Cannabis Samen vergleichen',
@@ -50,22 +49,21 @@ class product_compare {
                 'value' => 'Vergleichen Sie Cannabis Samen direkt miteinander. Sorten, Eigenschaften und Preise auf einen Blick bei Mr. Hanf.',
                 'sort'  => 4,
                 'func'  => ''
-            ),
-            'MODULE_PRODUCT_COMPARE_SITEMAP' => array(
-                'value' => 'true',
-                'sort'  => 5,
-                'func'  => "xtc_cfg_select_option(array('true', 'false'), "
             )
         );
         
         foreach ($required_fields as $key => $config) {
-            // Pruefen ob das Feld bereits existiert
             $check_query = xtc_db_query("SELECT configuration_value FROM " . TABLE_CONFIGURATION . " WHERE configuration_key = '" . xtc_db_input($key) . "'");
             if (xtc_db_num_rows($check_query) == 0) {
-                // Feld existiert nicht - automatisch anlegen
                 $set_function = ($config['func'] != '') ? "'" . xtc_db_input($config['func']) . "'" : "NULL";
                 xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, set_function, date_added) VALUES ('" . xtc_db_input($key) . "', '" . xtc_db_input($config['value']) . "', 6, " . (int)$config['sort'] . ", " . $set_function . ", now())");
             }
+        }
+        
+        // Aufraumen: Altes Sitemap-Feld entfernen falls vorhanden
+        $old_query = xtc_db_query("SELECT configuration_value FROM " . TABLE_CONFIGURATION . " WHERE configuration_key = 'MODULE_PRODUCT_COMPARE_SITEMAP'");
+        if (xtc_db_num_rows($old_query) > 0) {
+            xtc_db_query("DELETE FROM " . TABLE_CONFIGURATION . " WHERE configuration_key = 'MODULE_PRODUCT_COMPARE_SITEMAP'");
         }
     }
     
@@ -92,8 +90,7 @@ class product_compare {
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS', '6', 6, 2, now())");
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_META_TITLE', 'Produktvergleich - Cannabis Samen vergleichen', 6, 3, now())");
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_META_DESCRIPTION', 'Vergleichen Sie Cannabis Samen direkt miteinander. Sorten, Eigenschaften und Preise auf einen Blick bei Mr. Hanf.', 6, 4, now())");
-        xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, set_function, date_added) VALUES ('MODULE_PRODUCT_COMPARE_SITEMAP', 'true', 6, 5, 'xtc_cfg_select_option(array(\'true\', \'false\'), ', now())");
-        xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_SORT_ORDER', '0', 6, 6, now())");
+        xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_SORT_ORDER', '0', 6, 5, now())");
     }
     
     function remove() {
@@ -106,7 +103,6 @@ class product_compare {
             'MODULE_PRODUCT_COMPARE_MAX_PRODUCTS',
             'MODULE_PRODUCT_COMPARE_META_TITLE',
             'MODULE_PRODUCT_COMPARE_META_DESCRIPTION',
-            'MODULE_PRODUCT_COMPARE_SITEMAP',
             'MODULE_PRODUCT_COMPARE_SORT_ORDER'
         );
     }

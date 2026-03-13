@@ -1,9 +1,9 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.7 - Admin Sprachdatei (Deutsch)
+   Product Compare v1.7.9 - Admin Sprachdatei (Deutsch)
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.7
+   @version   1.7.9
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
@@ -22,8 +22,6 @@ define('MODULE_PRODUCT_COMPARE_META_TITLE_DESC', 'Der Meta-Titel (title-Tag) fü
 define('MODULE_PRODUCT_COMPARE_META_DESCRIPTION_TITLE', 'Meta-Description');
 define('MODULE_PRODUCT_COMPARE_META_DESCRIPTION_DESC', 'Die Meta-Beschreibung für die Produktvergleich-Seite. Wird in Suchmaschinen-Ergebnissen angezeigt (max. 160 Zeichen empfohlen).');
 
-define('MODULE_PRODUCT_COMPARE_SITEMAP_TITLE', 'In Sitemap aufnehmen');
-define('MODULE_PRODUCT_COMPARE_SITEMAP_DESC', 'Soll die Produktvergleich-Seite in die Sitemap.xml aufgenommen werden?');
 
 define('MODULE_PRODUCT_COMPARE_SORT_ORDER_TITLE', 'Sortierreihenfolge');
 define('MODULE_PRODUCT_COMPARE_SORT_ORDER_DESC', 'Sortierreihenfolge des Moduls.');

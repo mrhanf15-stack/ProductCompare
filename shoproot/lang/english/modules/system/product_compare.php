@@ -1,9 +1,9 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.7 - Admin Language File (English)
+   Product Compare v1.7.9 - Admin Language File (English)
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.7
+   @version   1.7.9
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
@@ -22,8 +22,6 @@ define('MODULE_PRODUCT_COMPARE_META_TITLE_DESC', 'The meta title (title tag) for
 define('MODULE_PRODUCT_COMPARE_META_DESCRIPTION_TITLE', 'Meta Description');
 define('MODULE_PRODUCT_COMPARE_META_DESCRIPTION_DESC', 'The meta description for the product compare page. Displayed in search engine results (max. 160 characters recommended).');
 
-define('MODULE_PRODUCT_COMPARE_SITEMAP_TITLE', 'Include in Sitemap');
-define('MODULE_PRODUCT_COMPARE_SITEMAP_DESC', 'Should the product compare page be included in the sitemap.xml?');
 
 define('MODULE_PRODUCT_COMPARE_SORT_ORDER_TITLE', 'Sort Order');
 define('MODULE_PRODUCT_COMPARE_SORT_ORDER_DESC', 'Sort order of the module.');

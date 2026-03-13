@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.8 - Comparison Page (Original Listing Design)
+   Product Compare v1.7.9 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
@@ -17,8 +17,12 @@
    6. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.8
+   @version   1.7.9
    @date      2026-03-13
+   
+   v1.7.9 Changes:
+   - Sitemap-Option entfernt (wird extern verwaltet)
+   - Auto-Update raeumt altes Sitemap-Feld automatisch auf
    
    v1.7.8 Changes:
    - Auto-Update: fehlende Konfigurationsfelder werden automatisch angelegt
