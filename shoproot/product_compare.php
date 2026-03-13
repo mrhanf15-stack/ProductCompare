@@ -6,6 +6,9 @@
 
 require('includes/application_top.php');
 
+// create smarty
+$smarty = new Smarty;
+
 // Load language file
 $pc_lang_file = DIR_WS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php';
 if (file_exists($pc_lang_file)) {
