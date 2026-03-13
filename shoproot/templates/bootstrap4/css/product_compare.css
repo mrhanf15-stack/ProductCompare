@@ -1,5 +1,5 @@
 /* =========================================================================
-   Product Compare v1.6.9 - CSS
+   Product Compare v1.7.3 - CSS
    3-Column Card Layout - Aligned cards with fixed sections
    ========================================================================= */
 
@@ -123,7 +123,7 @@
 .product-compare-badge {
     position: fixed;
     bottom: 80px;
-    left: 20px;
+    right: 20px;
     z-index: 1050;
     display: none;
     transition: all 0.3s ease;
@@ -205,7 +205,7 @@
 .compare-toast {
     position: fixed;
     bottom: 145px;
-    left: 20px;
+    right: 20px;
     z-index: 1060;
     background: #333;
     color: #fff;
@@ -232,7 +232,8 @@
 .compare-badge-preview {
     position: absolute;
     bottom: 65px;
-    left: 0;
+    right: 0;
+    left: auto;
     background: #fff;
     border: 1px solid #dee2e6;
     border-radius: 8px;
@@ -286,7 +287,7 @@
     }
     .product-compare-badge {
         bottom: 70px;
-        left: 15px;
+        right: 15px;
     }
     .product-compare-badge .compare-badge-link {
         width: 48px;
@@ -295,8 +296,8 @@
     }
     .compare-toast {
         bottom: 125px;
-        left: 15px;
         right: 15px;
+        left: auto;
         max-width: none;
     }
     .btn-compare {
@@ -326,7 +327,7 @@
 @media (max-width: 576px) {
     .product-compare-badge {
         bottom: 65px;
-        left: 10px;
+        right: 10px;
     }
     .product-compare-badge .compare-badge-link {
         width: 44px;
