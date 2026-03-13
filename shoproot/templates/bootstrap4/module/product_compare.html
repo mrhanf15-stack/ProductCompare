@@ -1,20 +1,14 @@
 {*
- * Product Compare v1.0.0 - Vergleichsseiten-Template
- * 
- * Zeigt die ausgewählten Produkte nebeneinander in einer responsiven Vergleichstabelle.
- * Verwendet die Seedfinder products_tags Artikelmerkmale.
- *
+ * Product Compare v1.4.0 - Dreispaltiges Karten-Layout
  * Pfad: templates/bootstrap4/module/product_compare.html
- * @author    Mr. Hanf / Manus AI
- * @version   1.0.0
- * @date      2026-03-12
+ * @version   1.4.0
+ * @date      2026-03-13
  *}
 
-<link rel="stylesheet" href="{$tpl_path}css/product_compare.css">
+<link rel="stylesheet" href="{$smarty.const.DIR_WS_CATALOG}templates/{$smarty.const.CURRENT_TEMPLATE}/css/product_compare.css">
 
-<div class="container-fluid product-compare-page">
+<div class="product-compare-page">
   
-  {* Seitentitel *}
   <h1 class="card p-2 bg-h mb-3">
     <span class="fa fa-balance-scale mr-2"></span>{$PC_PAGE_TITLE}
     {if $COMPARE_COUNT > 0}
@@ -23,7 +17,6 @@
   </h1>
   
   {if $COMPARE_COUNT == 0}
-    {* Leere Vergleichsliste *}
     <div class="card mb-4">
       <div class="card-body text-center py-5">
         <span class="fa fa-balance-scale fa-3x text-muted mb-3 d-block"></span>
@@ -37,7 +30,6 @@
     
   {else}
     
-    {* Aktionsleiste *}
     <div class="d-flex justify-content-between align-items-center mb-3">
       <a href="{$SHOP_LINK}" class="btn btn-outline-secondary">
         <span class="fa fa-arrow-left mr-1"></span>{$PC_BACK_BUTTON}
@@ -47,141 +39,95 @@
       </a>
     </div>
     
-    {* Vergleichstabelle *}
-    <div class="card mb-4">
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped table-compare mb-0">
+    <div class="row">
+      {foreach from=$COMPARE_PRODUCTS item=product name=compare_loop}
+      <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <div class="card compare-card h-100 shadow-sm">
           
-          {* HEADER: Produktbilder *}
-          <thead>
-            <tr class="compare-row-images">
-              <th class="compare-label-cell">{$PC_ROW_PRODUCT}</th>
-              {foreach from=$COMPARE_PRODUCTS item=product}
-              <td class="compare-product-cell text-center">
-                <div class="position-relative">
-                  <a href="{$product.PRODUCTS_REMOVE_LINK}" class="compare-remove-btn" title="{$PC_REMOVE_BUTTON}">
-                    <span class="fa fa-times"></span>
-                  </a>
-                  <a href="{$product.PRODUCTS_LINK}">
-                    {if $product.PRODUCTS_IMAGE != ''}
-                    <img src="{$product.PRODUCTS_IMAGE}" alt="{$product.PRODUCTS_NAME}" class="img-fluid compare-product-image mb-2">
-                    {/if}
-                    <h5 class="compare-product-name">{$product.PRODUCTS_NAME}</h5>
-                  </a>
-                </div>
-              </td>
-              {/foreach}
-            </tr>
-          </thead>
+          <a href="{$product.PRODUCTS_REMOVE_LINK}" class="compare-card-remove" title="{$PC_REMOVE_BUTTON}">
+            <span class="fa fa-times-circle"></span>
+          </a>
           
-          <tbody>
-            {* Hersteller *}
-            <tr>
-              <th class="compare-label-cell">
-                <span class="fa fa-industry mr-1"></span>{$PC_ROW_MANUFACTURER}
-              </th>
-              {foreach from=$COMPARE_PRODUCTS item=product}
-              <td class="compare-product-cell text-center">
-                {if $product.MANUFACTURERS_NAME != ''}{$product.MANUFACTURERS_NAME}{else}{$PC_NO_DATA}{/if}
-              </td>
-              {/foreach}
-            </tr>
+          <a href="{$product.PRODUCTS_LINK}" class="text-decoration-none">
+            {if $product.PRODUCTS_IMAGE != ''}
+            <img src="{$product.PRODUCTS_IMAGE}" alt="{$product.PRODUCTS_NAME}" class="card-img-top compare-card-img p-3">
+            {else}
+            <div class="compare-card-img-placeholder p-3 text-center">
+              <span class="fa fa-image fa-4x text-muted"></span>
+            </div>
+            {/if}
+          </a>
+          
+          <div class="card-body d-flex flex-column">
             
-            {* Preis *}
-            <tr class="compare-row-price">
-              <th class="compare-label-cell">
-                <span class="fa fa-tag mr-1"></span>{$PC_ROW_PRICE}
-              </th>
-              {foreach from=$COMPARE_PRODUCTS item=product}
-              <td class="compare-product-cell text-center">
-                <strong class="text-success">{$product.PRODUCTS_PRICE}</strong>
-              </td>
-              {/foreach}
-            </tr>
+            <a href="{$product.PRODUCTS_LINK}" class="text-decoration-none text-dark">
+              <h5 class="card-title compare-card-title">{$product.PRODUCTS_NAME}</h5>
+            </a>
             
-            {* Gewicht *}
-            <tr>
-              <th class="compare-label-cell">
-                <span class="fa fa-balance-scale mr-1"></span>{$PC_ROW_WEIGHT}
-              </th>
-              {foreach from=$COMPARE_PRODUCTS item=product}
-              <td class="compare-product-cell text-center">
-                {if $product.PRODUCTS_WEIGHT > 0}{$product.PRODUCTS_WEIGHT} kg{else}{$PC_NO_DATA}{/if}
-              </td>
-              {/foreach}
-            </tr>
+            {if $product.MANUFACTURERS_NAME != ''}
+            <p class="text-muted small mb-2">
+              <span class="fa fa-industry mr-1"></span>{$product.MANUFACTURERS_NAME}
+            </p>
+            {/if}
             
-            {* Verfügbarkeit *}
-            <tr>
-              <th class="compare-label-cell">
-                <span class="fa fa-check-circle mr-1"></span>{$PC_ROW_AVAILABILITY}
-              </th>
-              {foreach from=$COMPARE_PRODUCTS item=product}
-              <td class="compare-product-cell text-center">
+            <div class="compare-card-price mb-2">
+              <strong class="text-success h5">{$product.PRODUCTS_PRICE}</strong>
+            </div>
+            
+            <div class="compare-card-meta mb-2">
+              {if $product.PRODUCTS_WEIGHT > 0}
+              <span class="badge badge-light mr-1 mb-1">
+                <span class="fa fa-balance-scale mr-1"></span>{$product.PRODUCTS_WEIGHT} kg
+              </span>
+              {/if}
+              <span class="badge {if $product.PRODUCTS_QUANTITY > 0}badge-success{else}badge-danger{/if} mr-1 mb-1">
                 {if $product.PRODUCTS_QUANTITY > 0}
-                  <span class="text-success"><span class="fa fa-check mr-1"></span>{$PC_IN_STOCK}</span>
+                  <span class="fa fa-check mr-1"></span>{$PC_IN_STOCK}
                 {else}
-                  <span class="text-danger"><span class="fa fa-times mr-1"></span>{$PC_OUT_OF_STOCK}</span>
+                  <span class="fa fa-times mr-1"></span>{$PC_OUT_OF_STOCK}
                 {/if}
-              </td>
-              {/foreach}
-            </tr>
+              </span>
+            </div>
             
-            {* Filter-Eigenschaften (products_tags) *}
-            {foreach from=$ALL_FILTER_NAMES item=filter_name}
-            <tr>
-              <th class="compare-label-cell">
-                {if $filter_name == 'THC'}<span class="fa fa-flask mr-1"></span>
-                {elseif $filter_name == 'CBD'}<span class="fa fa-flask mr-1"></span>
-                {elseif $filter_name == 'Genetik'}<span class="fa fa-dna mr-1"></span>
-                {elseif $filter_name == 'Anbau'}<span class="fa fa-leaf mr-1"></span>
-                {elseif $filter_name == 'Blütezeit (Wochen)'}<span class="fa fa-clock-o mr-1"></span>
-                {elseif $filter_name == 'Ertrag (g/m²)'}<span class="fa fa-area-chart mr-1"></span>
-                {elseif $filter_name == 'Geschmack/Aroma'}<span class="fa fa-coffee mr-1"></span>
-                {elseif $filter_name == 'Wirkung'}<span class="fa fa-bolt mr-1"></span>
-                {else}<span class="fa fa-tag mr-1"></span>
-                {/if}
-                {$filter_name}
-              </th>
-              {foreach from=$COMPARE_PRODUCTS item=product}
-              <td class="compare-product-cell">
+            {if $product.PRODUCTS_SHORT_DESCRIPTION != ''}
+            <div class="compare-card-description small text-muted mb-3 flex-grow-1">
+              {$product.PRODUCTS_SHORT_DESCRIPTION}
+            </div>
+            {/if}
+            
+            {if $product.FILTER_PROPERTIES|@count > 0}
+            <div class="compare-card-tags mb-3">
+              {foreach from=$ALL_FILTER_NAMES item=filter_name}
                 {if isset($product.FILTER_PROPERTIES.$filter_name)}
-                  <div class="compare-tags">
-                    {foreach from=$product.FILTER_PROPERTIES.$filter_name item=value}
-                    <span class="badge badge-light compare-tag mb-1">
-                      {if $value.image != ''}
-                      <img src="{$value.image}" alt="{$value.name}" class="compare-tag-icon mr-1">
-                      {/if}
-                      {$value.name}
-                    </span>
-                    {/foreach}
-                  </div>
-                {else}
-                  <span class="text-muted">{$PC_NO_DATA}</span>
+                <div class="compare-tag-row mb-1">
+                  <small class="text-muted font-weight-bold">{$filter_name}:</small>
+                  {foreach from=$product.FILTER_PROPERTIES.$filter_name item=value}
+                  <span class="badge badge-light compare-tag">
+                    {if $value.image != ''}
+                    <img src="{$value.image}" alt="{$value.name}" class="compare-tag-icon mr-1">
+                    {/if}
+                    {$value.name}
+                  </span>
+                  {/foreach}
+                </div>
                 {/if}
-              </td>
               {/foreach}
-            </tr>
-            {/foreach}
+            </div>
+            {/if}
             
-            {* Aktionszeile *}
-            <tr class="compare-row-actions">
-              <th class="compare-label-cell"></th>
-              {foreach from=$COMPARE_PRODUCTS item=product}
-              <td class="compare-product-cell text-center">
-                <a href="{$product.PRODUCTS_LINK}" class="btn btn-primary btn-sm btn-block mb-2">
-                  <span class="fa fa-info-circle mr-1"></span>{$PC_DETAILS_BUTTON}
-                </a>
-                <a href="{$product.PRODUCTS_REMOVE_LINK}" class="btn btn-outline-danger btn-sm btn-block">
-                  <span class="fa fa-times mr-1"></span>{$PC_REMOVE_BUTTON}
-                </a>
-              </td>
-              {/foreach}
-            </tr>
+            <div class="mt-auto">
+              <a href="{$product.PRODUCTS_LINK}" class="btn btn-primary btn-sm btn-block mb-2">
+                <span class="fa fa-info-circle mr-1"></span>{$PC_DETAILS_BUTTON}
+              </a>
+              <a href="{$product.PRODUCTS_REMOVE_LINK}" class="btn btn-outline-danger btn-sm btn-block">
+                <span class="fa fa-times mr-1"></span>{$PC_REMOVE_BUTTON}
+              </a>
+            </div>
             
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
+      {/foreach}
     </div>
     
   {/if}

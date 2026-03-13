@@ -1,13 +1,20 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.3.0 - Comparison Page
+   Product Compare v1.4.0 - Comparison Page (3-Column Card Layout)
    File: product_compare.php (shoproot)
+   
+   Changes v1.4.0:
+   - fullcontent = true (no sidebar)
+   - 3-column card layout instead of table
+   - Short description instead of tags display
+   - Proper header.php integration for navigation
+   
+   @author    Mr. Hanf / Manus AI
+   @version   1.4.0
+   @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
 require('includes/application_top.php');
-
-// create smarty
-$smarty = new Smarty;
 
 // Load language file
 $pc_lang_file = DIR_WS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php';
@@ -87,6 +94,12 @@ if (!empty($_SESSION['product_compare'])) {
             $link = xtc_href_link(FILENAME_PRODUCT_INFO, 'products_id=' . $pid);
             $remove_link = xtc_href_link('product_compare.php', 'action=remove&products_id=' . $pid);
 
+            // Short description
+            $short_desc = '';
+            if (!empty($product['products_short_description'])) {
+                $short_desc = $product['products_short_description'];
+            }
+
             // Filter properties (products_tags)
             $filter_properties = array();
             $tags_query = xtc_db_query(
@@ -138,7 +151,7 @@ if (!empty($_SESSION['product_compare'])) {
                 'PRODUCTS_IMAGE' => $image,
                 'PRODUCTS_LINK' => $link,
                 'PRODUCTS_REMOVE_LINK' => $remove_link,
-                'PRODUCTS_SHORT_DESCRIPTION' => $product['products_short_description'],
+                'PRODUCTS_SHORT_DESCRIPTION' => $short_desc,
                 'MANUFACTURERS_NAME' => $product['manufacturers_name'],
                 'PRODUCTS_QUANTITY' => $product['products_quantity'],
                 'FILTER_PROPERTIES' => $filter_properties
@@ -150,7 +163,7 @@ if (!empty($_SESSION['product_compare'])) {
 // Sort filter names
 asort($all_filter_names);
 
-// include header (loads template framework, navigation, CSS)
+// include header (loads template framework, navigation, CSS, etc.)
 require(DIR_WS_INCLUDES . 'header.php');
 
 // Smarty assignments
@@ -179,7 +192,7 @@ $smarty->assign('PC_IN_STOCK', defined('PC_IN_STOCK') ? PC_IN_STOCK : 'Auf Lager
 $smarty->assign('PC_OUT_OF_STOCK', defined('PC_OUT_OF_STOCK') ? PC_OUT_OF_STOCK : 'Nicht verfuegbar');
 $smarty->assign('PC_NO_DATA', defined('PC_NO_DATA') ? PC_NO_DATA : '-');
 
-// Template
+// Template - use fullcontent mode (no sidebar)
 $smarty->assign('language', $_SESSION['language']);
 $smarty->caching = false;
 
@@ -187,6 +200,7 @@ $main_content = $smarty->fetch(CURRENT_TEMPLATE . '/module/product_compare.html'
 
 $smarty->assign('main_content', $main_content);
 $smarty->assign('language', $_SESSION['language']);
+$smarty->assign('fullcontent', true);
 
 if (!defined('RM'))
     $smarty->load_filter('output', 'note');
