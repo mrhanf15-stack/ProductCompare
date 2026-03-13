@@ -1,16 +1,17 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.7 - Admin System Module
+   Product Compare v1.7.8 - Admin System Module
    
    Pfad: admin/includes/modules/system/product_compare.php
    
    Konfiguration des Produktvergleich-Moduls im Admin-Bereich.
    Admin > Module > System Module > Produktvergleich
    
+   v1.7.8: Auto-Update - fehlende Konfigurationsfelder werden automatisch angelegt
    v1.7.7: Meta-Titel, Meta-Description und Sitemap-URL hinzugefuegt
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.7
+   @version   1.7.8
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
@@ -25,6 +26,47 @@ class product_compare {
         $this->description = (defined('MODULE_PRODUCT_COMPARE_TEXT_DESCRIPTION')) ? MODULE_PRODUCT_COMPARE_TEXT_DESCRIPTION : 'Ermöglicht Kunden, Produkte anhand ihrer Artikelmerkmale (products_tags) direkt miteinander zu vergleichen.';
         $this->sort_order = (defined('MODULE_PRODUCT_COMPARE_SORT_ORDER')) ? MODULE_PRODUCT_COMPARE_SORT_ORDER : 0;
         $this->enabled = (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS == 'true') ? true : false;
+        
+        // Auto-Update: Fehlende Konfigurationsfelder automatisch anlegen
+        // Wird nur ausgefuehrt wenn das Modul bereits installiert ist
+        if ($this->enabled || (defined('MODULE_PRODUCT_COMPARE_STATUS'))) {
+            $this->_auto_update();
+        }
+    }
+    
+    /**
+     * Prueft ob alle Konfigurationsfelder vorhanden sind und legt fehlende automatisch an.
+     * So muss bei Updates kein manuelles SQL ausgefuehrt werden.
+     */
+    function _auto_update() {
+        // Alle Felder die existieren muessen (key => default insert query)
+        $required_fields = array(
+            'MODULE_PRODUCT_COMPARE_META_TITLE' => array(
+                'value' => 'Produktvergleich - Cannabis Samen vergleichen',
+                'sort'  => 3,
+                'func'  => ''
+            ),
+            'MODULE_PRODUCT_COMPARE_META_DESCRIPTION' => array(
+                'value' => 'Vergleichen Sie Cannabis Samen direkt miteinander. Sorten, Eigenschaften und Preise auf einen Blick bei Mr. Hanf.',
+                'sort'  => 4,
+                'func'  => ''
+            ),
+            'MODULE_PRODUCT_COMPARE_SITEMAP' => array(
+                'value' => 'true',
+                'sort'  => 5,
+                'func'  => "xtc_cfg_select_option(array('true', 'false'), "
+            )
+        );
+        
+        foreach ($required_fields as $key => $config) {
+            // Pruefen ob das Feld bereits existiert
+            $check_query = xtc_db_query("SELECT configuration_value FROM " . TABLE_CONFIGURATION . " WHERE configuration_key = '" . xtc_db_input($key) . "'");
+            if (xtc_db_num_rows($check_query) == 0) {
+                // Feld existiert nicht - automatisch anlegen
+                $set_function = ($config['func'] != '') ? "'" . xtc_db_input($config['func']) . "'" : "NULL";
+                xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, set_function, date_added) VALUES ('" . xtc_db_input($key) . "', '" . xtc_db_input($config['value']) . "', 6, " . (int)$config['sort'] . ", " . $set_function . ", now())");
+            }
+        }
     }
     
     function process() {

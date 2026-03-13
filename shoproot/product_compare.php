@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.7 - Comparison Page (Original Listing Design)
+   Product Compare v1.7.8 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
@@ -17,8 +17,11 @@
    6. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.7
+   @version   1.7.8
    @date      2026-03-13
+   
+   v1.7.8 Changes:
+   - Auto-Update: fehlende Konfigurationsfelder werden automatisch angelegt
    
    v1.7.7 Changes:
    - Meta-Titel and Meta-Description configurable via Admin backend
