@@ -1,21 +1,25 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.6.9 - Comparison Page (Original Listing Design)
+   Product Compare v1.7.0 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
    the SAME Smarty variables as product_listing_include.html.
-   buildDataArray expects a DB result array (by reference), not just an ID.
+   
+   Flow follows the same pattern as seedfinder.php:
+   1. require application_top.php (creates $smarty)
+   2. Page logic (load products, assign variables)
+   3. $main_content = $smarty->fetch(template)
+   4. require header.php (loads ALL box modules: cart, wishlist, search, etc.)
+   5. $smarty->display(index.html)
+   6. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.6.9
+   @version   1.7.0
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
 require('includes/application_top.php');
-
-// create smarty instance (required before header.php)
-$smarty = new Smarty;
 
 // Load language file
 $pc_lang_file = DIR_WS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php';
@@ -117,13 +121,6 @@ if (!empty($_SESSION['product_compare'])) {
     }
 }
 
-// include header (loads template framework, navigation, CSS, etc.)
-require(DIR_WS_INCLUDES . 'header.php');
-
-// Load box modules (cart, wishlist, search, languages, categories, footer boxes etc.)
-// This is required for the complete header/footer in index.html
-require(DIR_WS_MODULES . 'column_left.php');
-
 // Smarty assignments
 $smarty->assign('COMPARE_PRODUCTS', $compare_products);
 $smarty->assign('COMPARE_COUNT', count($compare_products));
@@ -139,21 +136,26 @@ $smarty->assign('PC_CLEAR_BUTTON', defined('PC_CLEAR_BUTTON') ? PC_CLEAR_BUTTON 
 $smarty->assign('PC_BACK_BUTTON', defined('PC_BACK_BUTTON') ? PC_BACK_BUTTON : 'Weiter einkaufen');
 $smarty->assign('PC_REMOVE_BUTTON', defined('PC_REMOVE_BUTTON') ? PC_REMOVE_BUTTON : 'Entfernen');
 
-// Template - use fullcontent mode (no sidebar)
-// Template path for Smarty
+// Fetch main content template
 $smarty->assign('language', $_SESSION['language']);
-$smarty->assign('tpl_path', 'templates/' . CURRENT_TEMPLATE . '/');
 $smarty->caching = false;
 
 $main_content = $smarty->fetch(CURRENT_TEMPLATE . '/module/product_compare.html');
 
-$smarty->assign('main_content', $main_content);
-$smarty->assign('language', $_SESSION['language']);
-$smarty->assign('fullcontent', true);
+// Header (loads ALL box modules: cart, wishlist, search, languages, categories, footer etc.)
+// MUST be called AFTER fetch and BEFORE display - same pattern as seedfinder.php
+require(DIR_WS_INCLUDES . 'header.php');
 
-if (!defined('RM'))
+// Display page using index.html (fullcontent = no sidebar)
+$smarty->assign('main_content', $main_content);
+$smarty->assign('fullcontent', true);
+$smarty->caching = 0;
+
+if (!defined('RM')) {
     $smarty->load_filter('output', 'note');
+}
+
 $smarty->display(CURRENT_TEMPLATE . '/index.html');
 
+// Footer
 require('includes/application_bottom.php');
-?>
