@@ -1,15 +1,17 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.0.0 - Admin System Module
+   Product Compare v1.7.7 - Admin System Module
    
    Pfad: admin/includes/modules/system/product_compare.php
    
    Konfiguration des Produktvergleich-Moduls im Admin-Bereich.
    Admin > Module > System Module > Produktvergleich
    
+   v1.7.7: Meta-Titel, Meta-Description und Sitemap-URL hinzugefuegt
+   
    @author    Mr. Hanf / Manus AI
-   @version   1.0.0
-   @date      2026-03-12
+   @version   1.7.7
+   @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
 defined('_VALID_XTC') or die('Direct Access to this location is not allowed.');
@@ -26,7 +28,7 @@ class product_compare {
     }
     
     function process() {
-        // Wird bei jedem Seitenaufruf ausgeführt
+        // Wird bei jedem Seitenaufruf ausgefuehrt
     }
     
     function display() {
@@ -46,7 +48,10 @@ class product_compare {
     function install() {
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, set_function, date_added) VALUES ('MODULE_PRODUCT_COMPARE_STATUS', 'true', 6, 1, 'xtc_cfg_select_option(array(\'true\', \'false\'), ', now())");
         xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS', '6', 6, 2, now())");
-        xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_SORT_ORDER', '0', 6, 3, now())");
+        xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_META_TITLE', 'Produktvergleich - Cannabis Samen vergleichen', 6, 3, now())");
+        xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_META_DESCRIPTION', 'Vergleichen Sie Cannabis Samen direkt miteinander. Sorten, Eigenschaften und Preise auf einen Blick bei Mr. Hanf.', 6, 4, now())");
+        xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, set_function, date_added) VALUES ('MODULE_PRODUCT_COMPARE_SITEMAP', 'true', 6, 5, 'xtc_cfg_select_option(array(\'true\', \'false\'), ', now())");
+        xtc_db_query("INSERT INTO " . TABLE_CONFIGURATION . " (configuration_key, configuration_value, configuration_group_id, sort_order, date_added) VALUES ('MODULE_PRODUCT_COMPARE_SORT_ORDER', '0', 6, 6, now())");
     }
     
     function remove() {
@@ -57,6 +62,9 @@ class product_compare {
         return array(
             'MODULE_PRODUCT_COMPARE_STATUS',
             'MODULE_PRODUCT_COMPARE_MAX_PRODUCTS',
+            'MODULE_PRODUCT_COMPARE_META_TITLE',
+            'MODULE_PRODUCT_COMPARE_META_DESCRIPTION',
+            'MODULE_PRODUCT_COMPARE_SITEMAP',
             'MODULE_PRODUCT_COMPARE_SORT_ORDER'
         );
     }

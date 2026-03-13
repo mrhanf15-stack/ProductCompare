@@ -1,10 +1,10 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.0.0 - Admin Language File (English)
+   Product Compare v1.7.7 - Admin Language File (English)
    
    @author    Mr. Hanf / Manus AI
-   @version   1.0.0
-   @date      2026-03-12
+   @version   1.7.7
+   @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
 define('MODULE_PRODUCT_COMPARE_TEXT_TITLE', 'Product Compare');
@@ -15,6 +15,15 @@ define('MODULE_PRODUCT_COMPARE_STATUS_DESC', 'Should the Product Compare module 
 
 define('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS_TITLE', 'Maximum Products');
 define('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS_DESC', 'Maximum number of products that can be compared simultaneously (recommended: 4-6).');
+
+define('MODULE_PRODUCT_COMPARE_META_TITLE_TITLE', 'Meta Title');
+define('MODULE_PRODUCT_COMPARE_META_TITLE_DESC', 'The meta title (title tag) for the product compare page. Displayed in browser tab and search engine results.');
+
+define('MODULE_PRODUCT_COMPARE_META_DESCRIPTION_TITLE', 'Meta Description');
+define('MODULE_PRODUCT_COMPARE_META_DESCRIPTION_DESC', 'The meta description for the product compare page. Displayed in search engine results (max. 160 characters recommended).');
+
+define('MODULE_PRODUCT_COMPARE_SITEMAP_TITLE', 'Include in Sitemap');
+define('MODULE_PRODUCT_COMPARE_SITEMAP_DESC', 'Should the product compare page be included in the sitemap.xml?');
 
 define('MODULE_PRODUCT_COMPARE_SORT_ORDER_TITLE', 'Sort Order');
 define('MODULE_PRODUCT_COMPARE_SORT_ORDER_DESC', 'Sort order of the module.');

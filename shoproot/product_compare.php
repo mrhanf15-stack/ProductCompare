@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.6 - Comparison Page (Original Listing Design)
+   Product Compare v1.7.7 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
@@ -12,12 +12,19 @@
    3. Page logic (load products, assign variables)
    3. $main_content = $smarty->fetch(template)
    4. require header.php (loads ALL box modules: cart, wishlist, search, etc.)
+      -> header.php calls autoinclude header_head/ which sets $meta_title + $meta_description
    5. $smarty->display(index.html)
    6. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.6
+   @version   1.7.7
    @date      2026-03-13
+   
+   v1.7.7 Changes:
+   - Meta-Titel and Meta-Description configurable via Admin backend
+   - Autoinclude header_head sets meta tags for SEO
+   - Sitemap integration via autoinclude
+   - Canonical URL for product compare page
    
    v1.7.6 Changes:
    - Image fix: position absolute + object-fit cover to FORCE equal height for ALL images
@@ -164,6 +171,7 @@ $main_content = $smarty->fetch(CURRENT_TEMPLATE . '/module/product_compare.html'
 
 // Header (loads ALL box modules: cart, wishlist, search, languages, categories, footer etc.)
 // MUST be called AFTER fetch and BEFORE display - same pattern as seedfinder.php
+// Note: header.php triggers autoinclude header_head/ which sets $meta_title and $meta_description
 require(DIR_WS_INCLUDES . 'header.php');
 
 // Display page using index.html (fullcontent = no sidebar)
