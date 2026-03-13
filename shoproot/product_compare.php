@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.4 - Comparison Page (Original Listing Design)
+   Product Compare v1.7.5 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
@@ -16,12 +16,13 @@
    6. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.4
+   @version   1.7.5
    @date      2026-03-13
    
-   v1.7.4 Changes:
+   v1.7.5 Changes:
    - contentAnywhere modifier support (use {ID|contentAnywhere|inserttags} in template)
-   - Product images: object-fit cover for equal height
+   - Product images: object-fit cover with !important to force equal height even for small images
+   - Removed img-fluid class that prevented small images from scaling up
    - Back button: "Weiter einkaufen" with history.back()
    -----------------------------------------------------------------------------------------*/
 

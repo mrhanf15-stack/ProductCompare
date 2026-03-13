@@ -1,5 +1,5 @@
 {*
- * Product Compare v1.7.4 - 3-Column Card Layout
+ * Product Compare v1.7.5 - 3-Column Card Layout
  * - contentAnywhere support for custom content blocks
  * - history.back() for "Weiter einkaufen" button
  * - Images object-fit cover for equal height
@@ -7,7 +7,7 @@
  * - Fixed image height for alignment
  * - Short description fixed height with scroll
  * - Price/Buttons in card-footer at bottom
- * @version   1.7.4
+ * @version   1.7.5
  * @date      2026-03-13
  *}
 {assign "dummy" ""}
@@ -65,7 +65,7 @@
           {* Product image - fixed height, object-fit cover *}
           <a href="{$module_data.PRODUCTS_LINK}" class="card-body text-center lb_image compare-img-box">
             {if $module_data.PRODUCTS_IMAGE != ''}
-              <img class="img-fluid lazyloaded" src="{$module_data.PRODUCTS_IMAGE}" alt="{$module_data.PRODUCTS_NAME|onlytext}" title="{$module_data.PRODUCTS_NAME|onlytext}">
+              <img class="compare-product-img" src="{$module_data.PRODUCTS_IMAGE}" alt="{$module_data.PRODUCTS_NAME|onlytext}" title="{$module_data.PRODUCTS_NAME|onlytext}">
             {/if}
           </a>
           
