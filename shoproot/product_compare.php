@@ -1,18 +1,21 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.5.0 - Comparison Page (Original Listing Design)
+   Product Compare v1.6.0 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
-   Changes v1.5.0:
-   - Uses original product listing card design
-   - Loads product options/attributes for each product
-   - Warenkorb (Add to Cart) form support
-   - Details button and Buy Now button
-   - Short description display
-   - 3-column layout (col-lg-4)
+   Changes v1.6.0:
+   - Uses the shop's own product class to generate listing data
+   - Generates the SAME Smarty variables as product_listing_include.html
+   - PRODUCT_ATTRIBUTES rendered by the shop (multi_options_1.html)
+   - PRODUCTS_ADD_CART_BUTTON, PRODUCTS_BUTTON_DETAILS from shop
+   - FORM_ACTION / FORM_END for cart forms
+   - PRODUCTS_PRICE_ARRAY for price_box.html
+   - PRODUCTS_TAX_INFO, PRODUCTS_SHIPPING_LINK
+   - ADD_QTY / ADD_QTYPD for quantity selection
+   - Short description with max-height 600px
    
    @author    Mr. Hanf / Manus AI
-   @version   1.5.0
+   @version   1.6.0
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
@@ -30,26 +33,6 @@ if (file_exists($pc_lang_file)) {
 // Init session
 if (!isset($_SESSION['product_compare'])) {
     $_SESSION['product_compare'] = array();
-}
-
-// Action: add to cart
-if (isset($_POST['action']) && $_POST['action'] == 'buy_now' && isset($_POST['products_id'])) {
-    $buy_pid = (int)$_POST['products_id'];
-    $buy_qty = isset($_POST['qty']) ? (int)$_POST['qty'] : 1;
-    if ($buy_qty < 1) $buy_qty = 1;
-    
-    // Collect attribute selections
-    $id_array = array();
-    if (isset($_POST['id']) && is_array($_POST['id'])) {
-        $id_array = $_POST['id'];
-    }
-    
-    // Use the shop cart
-    if (isset($_SESSION['cart']) && is_object($_SESSION['cart'])) {
-        $_SESSION['cart']->add_cart($buy_pid, $buy_qty, $id_array);
-    }
-    
-    xtc_redirect(xtc_href_link(FILENAME_SHOPPING_CART));
 }
 
 // Action: remove product
@@ -73,199 +56,34 @@ if (isset($_GET['action']) && $_GET['action'] == 'clear') {
 $bc_title = defined('PC_PAGE_TITLE') ? PC_PAGE_TITLE : 'Produktvergleich';
 $breadcrumb->add($bc_title, xtc_href_link('product_compare.php'));
 
-// Load products
+// Load the shop's product class (same as used by product listing)
+require_once(DIR_WS_CLASSES . 'product.php');
+
+// Load products using the shop's product class
 $compare_products = array();
 
 if (!empty($_SESSION['product_compare'])) {
+    $product_obj = new product();
+    
     foreach ($_SESSION['product_compare'] as $pid) {
-        $product_query = xtc_db_query(
-            "SELECT p.products_id, p.products_price, p.products_tax_class_id, 
-                    p.products_image, p.products_model, p.products_weight,
-                    p.products_quantity, p.manufacturers_id,
-                    p.products_shippingtime,
-                    pd.products_name, pd.products_short_description,
-                    m.manufacturers_name
-               FROM " . TABLE_PRODUCTS . " p
-               JOIN " . TABLE_PRODUCTS_DESCRIPTION . " pd ON p.products_id = pd.products_id
-               LEFT JOIN " . TABLE_MANUFACTURERS . " m ON p.manufacturers_id = m.manufacturers_id
-              WHERE p.products_id = '" . (int)$pid . "'
-                AND pd.language_id = '" . (int)$_SESSION['languages_id'] . "'
-                AND p.products_status = 1"
+        $pid = (int)$pid;
+        
+        // Check product exists and is active
+        $check_query = xtc_db_query(
+            "SELECT products_id FROM " . TABLE_PRODUCTS . "
+              WHERE products_id = '" . $pid . "'
+                AND products_status = 1"
         );
-
-        if ($product = xtc_db_fetch_array($product_query)) {
-            // Price
-            $tax_rate = xtc_get_tax_rate($product['products_tax_class_id']);
-            if (isset($_SESSION['customers_status']['customers_status_show_price_tax']) 
-                && $_SESSION['customers_status']['customers_status_show_price_tax'] == 1) {
-                $price_display = $product['products_price'] * (1 + $tax_rate / 100);
-            } else {
-                $price_display = $product['products_price'];
-            }
-            $formatted_price = '';
-            if (isset($xtPrice) && is_object($xtPrice) && method_exists($xtPrice, 'xtcFormat')) {
-                $formatted_price = $xtPrice->xtcFormat($price_display, true);
-            } else {
-                $formatted_price = number_format($price_display, 2, ',', '.') . ' EUR';
-            }
-
-            // Image
-            $image = '';
-            if (!empty($product['products_image'])) {
-                $image = DIR_WS_IMAGES . 'product_images/thumbnail_images/' . $product['products_image'];
-            }
-
-            // Links
-            $link = xtc_href_link(FILENAME_PRODUCT_INFO, 'products_id=' . $pid);
-            $remove_link = xtc_href_link('product_compare.php', 'action=remove&products_id=' . $pid);
-            $buy_link = xtc_href_link('product_compare.php', '', 'SSL');
-
-            // Manufacturer link
-            $manufacturer_link = '';
-            if (!empty($product['manufacturers_id'])) {
-                $manufacturer_link = xtc_href_link(FILENAME_DEFAULT, 'manufacturers_id=' . (int)$product['manufacturers_id']);
-            }
-
-            // Short description
-            $short_desc = '';
-            if (!empty($product['products_short_description'])) {
-                $short_desc = $product['products_short_description'];
-            }
-
-            // Shipping name
-            $shipping_name = '';
-            $shipping_time = (int)$product['products_shippingtime'];
-            if ($shipping_time > 0) {
-                $ship_query = xtc_db_query(
-                    "SELECT shipping_status_name FROM " . TABLE_SHIPPING_STATUS . "
-                      WHERE shipping_status_id = '" . $shipping_time . "'
-                        AND language_id = '" . (int)$_SESSION['languages_id'] . "'"
-                );
-                if ($ship = xtc_db_fetch_array($ship_query)) {
-                    $shipping_name = $ship['shipping_status_name'];
-                }
-            }
-
-            // Product options/attributes
-            $product_options = array();
-            $has_attributes = false;
-            $options_query = xtc_db_query(
-                "SELECT DISTINCT po.products_options_id, po.products_options_name
-                   FROM " . TABLE_PRODUCTS_OPTIONS . " po
-                   JOIN " . TABLE_PRODUCTS_ATTRIBUTES . " pa ON po.products_options_id = pa.options_id
-                  WHERE pa.products_id = '" . (int)$pid . "'
-                    AND po.language_id = '" . (int)$_SESSION['languages_id'] . "'
-                 ORDER BY po.products_options_sort_order, po.products_options_name"
-            );
-            
-            while ($option = xtc_db_fetch_array($options_query)) {
-                $has_attributes = true;
-                $option_values = array();
-                
-                $values_query = xtc_db_query(
-                    "SELECT pa.products_attributes_id, pa.options_values_id,
-                            pa.options_values_price, pa.price_prefix,
-                            pa.attributes_stock, pa.attributes_model,
-                            pov.products_options_values_name,
-                            pa.sortorder
-                       FROM " . TABLE_PRODUCTS_ATTRIBUTES . " pa
-                       JOIN " . TABLE_PRODUCTS_OPTIONS_VALUES . " pov 
-                            ON pa.options_values_id = pov.products_options_values_id
-                      WHERE pa.products_id = '" . (int)$pid . "'
-                        AND pa.options_id = '" . (int)$option['products_options_id'] . "'
-                        AND pov.language_id = '" . (int)$_SESSION['languages_id'] . "'
-                   ORDER BY pa.sortorder, pov.products_options_values_name"
-                );
-                
-                while ($value = xtc_db_fetch_array($values_query)) {
-                    $attr_price = '';
-                    $attr_full_price = '';
-                    $attr_stock = (int)$value['attributes_stock'];
-                    
-                    if ((float)$value['options_values_price'] > 0) {
-                        $opt_price_raw = (float)$value['options_values_price'];
-                        if (isset($_SESSION['customers_status']['customers_status_show_price_tax']) 
-                            && $_SESSION['customers_status']['customers_status_show_price_tax'] == 1) {
-                            $opt_price_display = $opt_price_raw * (1 + $tax_rate / 100);
-                        } else {
-                            $opt_price_display = $opt_price_raw;
-                        }
-                        
-                        if ($value['price_prefix'] == '=') {
-                            // Fixed price
-                            if (isset($xtPrice) && is_object($xtPrice)) {
-                                $attr_full_price = $xtPrice->xtcFormat($opt_price_display, true);
-                            } else {
-                                $attr_full_price = number_format($opt_price_display, 2, ',', '.') . ' EUR';
-                            }
-                        } else {
-                            if (isset($xtPrice) && is_object($xtPrice)) {
-                                $attr_price = $value['price_prefix'] . ' ' . $xtPrice->xtcFormat($opt_price_display, true);
-                            } else {
-                                $attr_price = $value['price_prefix'] . ' ' . number_format($opt_price_display, 2, ',', '.') . ' EUR';
-                            }
-                        }
-                    }
-                    
-                    // Calculate full price for JSON data
-                    $base_price = (float)$product['products_price'];
-                    if (isset($_SESSION['customers_status']['customers_status_show_price_tax']) 
-                        && $_SESSION['customers_status']['customers_status_show_price_tax'] == 1) {
-                        $base_price = $base_price * (1 + $tax_rate / 100);
-                    }
-                    $opt_price_val = (float)$value['options_values_price'];
-                    if (isset($_SESSION['customers_status']['customers_status_show_price_tax']) 
-                        && $_SESSION['customers_status']['customers_status_show_price_tax'] == 1) {
-                        $opt_price_val = $opt_price_val * (1 + $tax_rate / 100);
-                    }
-                    
-                    $json_data = array(
-                        'pid' => (int)$pid,
-                        'prefix' => $value['price_prefix'],
-                        'aprice' => round($opt_price_val, 2),
-                        'gprice' => round($base_price, 2),
-                        'oprice' => round($base_price, 2)
-                    );
-                    
-                    $option_values[] = array(
-                        'ID' => $value['products_attributes_id'],
-                        'VALUES_ID' => $value['options_values_id'],
-                        'TEXT' => $value['products_options_values_name'],
-                        'PRICE' => $attr_price,
-                        'FULL_PRICE' => $attr_full_price,
-                        'PREFIX' => $value['price_prefix'],
-                        'STOCK' => $attr_stock,
-                        'JSON_ATTRDATA' => htmlspecialchars(json_encode($json_data), ENT_QUOTES, 'UTF-8')
-                    );
-                }
-                
-                $product_options[] = array(
-                    'ID' => $option['products_options_id'],
-                    'NAME' => $option['products_options_name'],
-                    'DATA' => $option_values
-                );
-            }
-
-            $compare_products[] = array(
-                'PRODUCTS_ID' => $pid,
-                'PRODUCTS_NAME' => $product['products_name'],
-                'PRODUCTS_MODEL' => $product['products_model'],
-                'PRODUCTS_PRICE' => $formatted_price,
-                'PRODUCTS_WEIGHT' => $product['products_weight'],
-                'PRODUCTS_IMAGE' => $image,
-                'PRODUCTS_LINK' => $link,
-                'PRODUCTS_REMOVE_LINK' => $remove_link,
-                'PRODUCTS_BUY_LINK' => $buy_link,
-                'PRODUCTS_SHORT_DESCRIPTION' => $short_desc,
-                'MANUFACTURERS_NAME' => $product['manufacturers_name'],
-                'MANUFACTURERS_LINK' => $manufacturer_link,
-                'PRODUCTS_QUANTITY' => $product['products_quantity'],
-                'PRODUCTS_SHIPPINGTIME' => $shipping_time,
-                'SHIPPING_NAME' => $shipping_name,
-                'HAS_ATTRIBUTES' => $has_attributes,
-                'PRODUCT_OPTIONS' => $product_options
-            );
-        }
+        if (!xtc_db_num_rows($check_query)) continue;
+        
+        // Use the shop's product class to build listing data
+        // This generates ALL the same variables as product_listing_include.html
+        $product_data = $product_obj->buildDataArray($pid);
+        
+        // Add our custom fields
+        $product_data['PRODUCTS_REMOVE_LINK'] = xtc_href_link('product_compare.php', 'action=remove&products_id=' . $pid);
+        
+        $compare_products[] = $product_data;
     }
 }
 
@@ -286,8 +104,6 @@ $smarty->assign('PC_EMPTY_HINT', defined('PC_EMPTY_HINT') ? PC_EMPTY_HINT : 'Pro
 $smarty->assign('PC_CLEAR_BUTTON', defined('PC_CLEAR_BUTTON') ? PC_CLEAR_BUTTON : 'Liste leeren');
 $smarty->assign('PC_BACK_BUTTON', defined('PC_BACK_BUTTON') ? PC_BACK_BUTTON : 'Weiter einkaufen');
 $smarty->assign('PC_REMOVE_BUTTON', defined('PC_REMOVE_BUTTON') ? PC_REMOVE_BUTTON : 'Entfernen');
-$smarty->assign('PC_DETAILS_BUTTON', defined('PC_DETAILS_BUTTON') ? PC_DETAILS_BUTTON : 'Details');
-$smarty->assign('PC_ADD_TO_CART', defined('PC_ADD_TO_CART') ? PC_ADD_TO_CART : 'In den Warenkorb');
 
 // Template - use fullcontent mode (no sidebar)
 $smarty->assign('language', $_SESSION['language']);
