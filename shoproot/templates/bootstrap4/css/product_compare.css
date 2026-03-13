@@ -1,6 +1,6 @@
 /* =========================================================================
-   Product Compare v1.6.3 - CSS
-   3-Column Card Layout - Legend hidden, fixed image height, bottom-aligned footer
+   Product Compare v1.6.4 - CSS
+   3-Column Card Layout - Aligned cards with fixed sections
    ========================================================================= */
 
 /* === Page Layout === */
@@ -59,6 +59,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .product-compare-page .compare-img-box img {
@@ -73,10 +74,21 @@
     line-height: 1.3;
 }
 
-/* === Short Description === */
-.product-compare-page .lr_desc {
-    max-height: 600px;
+/* === Short Description - Fixed Height with Scroll === */
+.product-compare-page .compare-desc-box {
+    height: 300px;
     overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.product-compare-page .compare-desc-box .lr_desc {
+    max-height: none;
+}
+
+/* === Card Footer - Options/Price/Buttons at Bottom === */
+.product-compare-page .compare-footer {
+    border-top: 1px solid rgba(0,0,0,.08);
+    padding: 0.75rem 1.25rem;
 }
 
 /* === HIDE Legend (stock color dots) inside options === */
@@ -242,6 +254,10 @@
     }
     .product-compare-page .compare-img-box img {
         max-height: 160px;
+    }
+    .product-compare-page .compare-desc-box {
+        height: auto;
+        max-height: 300px;
     }
     .product-compare-badge {
         bottom: 70px;

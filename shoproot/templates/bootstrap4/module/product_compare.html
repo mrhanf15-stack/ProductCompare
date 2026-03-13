@@ -1,9 +1,10 @@
 {*
- * Product Compare v1.6.3 - 3-Column Card Layout
+ * Product Compare v1.6.4 - 3-Column Card Layout
  * - Legend hidden via CSS
  * - Fixed image height for alignment
- * - Price/Buttons pushed to bottom with mt-auto
- * @version   1.6.3
+ * - Short description fixed height with scroll
+ * - Price/Buttons in card-footer at bottom
+ * @version   1.6.4
  * @date      2026-03-13
  *}
 {assign "dummy" ""}
@@ -69,18 +70,18 @@
             {/if}
           </div>
           
-          {* Short description *}
+          {* Short description - fixed height with scroll *}
           {if !empty($module_data.PRODUCTS_SHORT_DESCRIPTION)}
-          <div class="card-body pt-0 pb-1">
+          <div class="card-body pt-0 pb-1 compare-desc-box">
             <div class="lr_desc teabls table-striped">{$module_data.PRODUCTS_SHORT_DESCRIPTION}</div>
           </div>
           {/if}
           
-          {* Options, Price, Buttons - pushed to bottom with mt-auto *}
-          <div class="card-body pt-0 mt-auto">
+          {* Options, Price, Buttons - card-footer pushed to bottom *}
+          <div class="card-footer bg-white mt-auto compare-footer">
             {$module_data.FORM_ACTION}
             
-            {* Product attributes/options (multi_options_1.html rendered by shop) *}
+            {* Product attributes/options *}
             {if $module_data.PRODUCT_ATTRIBUTES}
               <div id="options{$module_data.PRODUCTS_ID}" class="cf">{$module_data.PRODUCT_ATTRIBUTES|replace:' p-2':''}</div>
             {/if}
