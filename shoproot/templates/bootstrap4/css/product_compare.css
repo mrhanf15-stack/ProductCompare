@@ -1,5 +1,5 @@
 /* =========================================================================
-   Product Compare v1.6.4 - CSS
+   Product Compare v1.6.5 - CSS
    3-Column Card Layout - Aligned cards with fixed sections
    ========================================================================= */
 
@@ -63,9 +63,10 @@
 }
 
 .product-compare-page .compare-img-box img {
-    max-height: 200px;
-    max-width: 100%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
 }
 
 /* === Product Title === */
@@ -253,7 +254,9 @@
         height: 180px;
     }
     .product-compare-page .compare-img-box img {
-        max-height: 160px;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
     .product-compare-page .compare-desc-box {
         height: auto;
@@ -292,7 +295,9 @@
         height: 250px;
     }
     .product-compare-page .compare-img-box img {
-        max-height: 230px;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 }
 
