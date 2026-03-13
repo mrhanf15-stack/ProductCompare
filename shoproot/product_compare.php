@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.6.1 - Comparison Page (Original Listing Design)
+   Product Compare v1.6.9 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
@@ -8,7 +8,7 @@
    buildDataArray expects a DB result array (by reference), not just an ID.
    
    @author    Mr. Hanf / Manus AI
-   @version   1.6.1
+   @version   1.6.9
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
@@ -120,6 +120,10 @@ if (!empty($_SESSION['product_compare'])) {
 // include header (loads template framework, navigation, CSS, etc.)
 require(DIR_WS_INCLUDES . 'header.php');
 
+// Load box modules (cart, wishlist, search, languages, categories, footer boxes etc.)
+// This is required for the complete header/footer in index.html
+require(DIR_WS_MODULES . 'column_left.php');
+
 // Smarty assignments
 $smarty->assign('COMPARE_PRODUCTS', $compare_products);
 $smarty->assign('COMPARE_COUNT', count($compare_products));
@@ -136,7 +140,9 @@ $smarty->assign('PC_BACK_BUTTON', defined('PC_BACK_BUTTON') ? PC_BACK_BUTTON : '
 $smarty->assign('PC_REMOVE_BUTTON', defined('PC_REMOVE_BUTTON') ? PC_REMOVE_BUTTON : 'Entfernen');
 
 // Template - use fullcontent mode (no sidebar)
+// Template path for Smarty
 $smarty->assign('language', $_SESSION['language']);
+$smarty->assign('tpl_path', 'templates/' . CURRENT_TEMPLATE . '/');
 $smarty->caching = false;
 
 $main_content = $smarty->fetch(CURRENT_TEMPLATE . '/module/product_compare.html');

@@ -1,5 +1,5 @@
 /* =========================================================================
-   Product Compare v1.6.8 - CSS
+   Product Compare v1.6.9 - CSS
    3-Column Card Layout - Aligned cards with fixed sections
    ========================================================================= */
 
@@ -71,7 +71,7 @@
 
 /* === Product Title Area - Fixed Height for Table Alignment === */
 .product-compare-page .card-body.pt-0.pb-1:not(.compare-desc-box) {
-    min-height: 90px;
+    min-height: 55px;
     flex-shrink: 0;
 }
 
