@@ -1,9 +1,9 @@
 {*
- * Product Compare v1.6.2 - 3-Column Card Layout with Shop Variables
- * Uses buildDataArray variables: PRODUCT_ATTRIBUTES, PRODUCTS_ADD_CART_BUTTON,
- * PRODUCTS_BUTTON_DETAILS, FORM_ACTION, FORM_END, PRODUCTS_PRICE_ARRAY,
- * ADD_QTY, ADD_QTYPD, PRODUCTS_TAX_INFO, PRODUCTS_SHIPPING_LINK
- * @version   1.6.2
+ * Product Compare v1.6.3 - 3-Column Card Layout
+ * - Legend hidden via CSS
+ * - Fixed image height for alignment
+ * - Price/Buttons pushed to bottom with mt-auto
+ * @version   1.6.3
  * @date      2026-03-13
  *}
 {assign "dummy" ""}
@@ -47,15 +47,15 @@
     <div class="row">
     {foreach from=$COMPARE_PRODUCTS item=module_data name=compare_loop}
       <div class="col-sm-12 col-md-6 col-lg-4 mb-3 listingbox">
-        <div class="card h-100">
+        <div class="card h-100 d-flex flex-column">
           
           {* Remove button *}
           <a href="{$module_data.PRODUCTS_REMOVE_LINK}" class="compare-remove-btn" title="{$PC_REMOVE_BUTTON}">
             <span class="fa fa-times"></span>
           </a>
           
-          {* Product image *}
-          <a href="{$module_data.PRODUCTS_LINK}" class="card-body text-center lb_image">
+          {* Product image - fixed height *}
+          <a href="{$module_data.PRODUCTS_LINK}" class="card-body text-center lb_image compare-img-box">
             {if $module_data.PRODUCTS_IMAGE != ''}
               <img class="img-fluid lazyloaded" src="{$module_data.PRODUCTS_IMAGE}" alt="{$module_data.PRODUCTS_NAME|onlytext}" title="{$module_data.PRODUCTS_NAME|onlytext}">
             {/if}
@@ -76,17 +76,12 @@
           </div>
           {/if}
           
-          {* Options, Price, Buttons - from shop system *}
-          <div class="card-body pt-0">
+          {* Options, Price, Buttons - pushed to bottom with mt-auto *}
+          <div class="card-body pt-0 mt-auto">
             {$module_data.FORM_ACTION}
             
             {* Product attributes/options (multi_options_1.html rendered by shop) *}
             {if $module_data.PRODUCT_ATTRIBUTES}
-              {if $module_data.PRODUCTS_SHIPPING_NAME != 'ca. 2 Wochen' && $module_data.PRODUCTS_SHIPPING_NAME != 'approx. 2 weeks' && $module_data.PRODUCTS_SHIPPING_NAME != 'env. 2 semaines' && $module_data.PRODUCTS_SHIPPING_NAME != 'aprox. 2 semanas'}
-                {include file="module/includes/shiping_tooltip.html"}
-              {else}
-                <div class="alert alert-dark roundet" role="alert">{1003215|contentAnywhere}</div>
-              {/if}
               <div id="options{$module_data.PRODUCTS_ID}" class="cf">{$module_data.PRODUCT_ATTRIBUTES|replace:' p-2':''}</div>
             {/if}
             

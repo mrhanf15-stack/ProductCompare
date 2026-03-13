@@ -1,6 +1,6 @@
 /* =========================================================================
-   Product Compare v1.6.2 - CSS
-   3-Column Card Layout with shop-native options/buttons
+   Product Compare v1.6.3 - CSS
+   3-Column Card Layout - Legend hidden, fixed image height, bottom-aligned footer
    ========================================================================= */
 
 /* === Page Layout === */
@@ -52,9 +52,18 @@
     transform: scale(1.15);
 }
 
-/* === Product Image === */
-.product-compare-page .lb_image img {
+/* === Product Image - Fixed Height for Alignment === */
+.product-compare-page .compare-img-box {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.product-compare-page .compare-img-box img {
     max-height: 200px;
+    max-width: 100%;
     object-fit: contain;
 }
 
@@ -68,6 +77,11 @@
 .product-compare-page .lr_desc {
     max-height: 600px;
     overflow-y: auto;
+}
+
+/* === HIDE Legend (stock color dots) inside options === */
+.product-compare-page .legend {
+    display: none !important;
 }
 
 /* === Floating Compare Badge === */
@@ -223,7 +237,10 @@
         flex: 0 0 100%;
         max-width: 100%;
     }
-    .product-compare-page .lb_image img {
+    .product-compare-page .compare-img-box {
+        height: 180px;
+    }
+    .product-compare-page .compare-img-box img {
         max-height: 160px;
     }
     .product-compare-badge {
@@ -255,8 +272,11 @@
 }
 
 @media (min-width: 992px) {
-    .product-compare-page .lb_image img {
-        max-height: 250px;
+    .product-compare-page .compare-img-box {
+        height: 250px;
+    }
+    .product-compare-page .compare-img-box img {
+        max-height: 230px;
     }
 }
 
