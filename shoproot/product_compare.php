@@ -1,21 +1,14 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.6.0 - Comparison Page (Original Listing Design)
+   Product Compare v1.6.1 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
-   Changes v1.6.0:
-   - Uses the shop's own product class to generate listing data
-   - Generates the SAME Smarty variables as product_listing_include.html
-   - PRODUCT_ATTRIBUTES rendered by the shop (multi_options_1.html)
-   - PRODUCTS_ADD_CART_BUTTON, PRODUCTS_BUTTON_DETAILS from shop
-   - FORM_ACTION / FORM_END for cart forms
-   - PRODUCTS_PRICE_ARRAY for price_box.html
-   - PRODUCTS_TAX_INFO, PRODUCTS_SHIPPING_LINK
-   - ADD_QTY / ADD_QTYPD for quantity selection
-   - Short description with max-height 600px
+   Uses the shop's own product class buildDataArray() to generate
+   the SAME Smarty variables as product_listing_include.html.
+   buildDataArray expects a DB result array (by reference), not just an ID.
    
    @author    Mr. Hanf / Manus AI
-   @version   1.6.0
+   @version   1.6.1
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
@@ -63,27 +56,64 @@ require_once(DIR_WS_CLASSES . 'product.php');
 $compare_products = array();
 
 if (!empty($_SESSION['product_compare'])) {
+    // Create product object (without pID, we call buildDataArray per product)
     $product_obj = new product();
     
+    // Use the same SELECT fields as the product class default_select
+    $select_fields = ADD_SELECT_PRODUCT .
+                     'p.products_fsk18,
+                      p.products_id,
+                      p.products_price,
+                      p.products_tax_class_id,
+                      p.products_image,
+                      p.products_quantity,
+                      p.products_shippingtime,
+                      p.products_vpe,
+                      p.products_vpe_status,
+                      p.products_vpe_value,
+                      p.products_model,
+                      p.manufacturers_id,
+                      pd.products_name,
+                      pd.products_heading_title,
+                      pd.products_short_description';
+    
+    $id_counter = 0;
     foreach ($_SESSION['product_compare'] as $pid) {
         $pid = (int)$pid;
         
-        // Check product exists and is active
-        $check_query = xtc_db_query(
-            "SELECT products_id FROM " . TABLE_PRODUCTS . "
-              WHERE products_id = '" . $pid . "'
-                AND products_status = 1"
-        );
-        if (!xtc_db_num_rows($check_query)) continue;
+        // Query product data - same structure as product listing queries
+        $product_query = xtDBquery("SELECT " . $select_fields . "
+                                      FROM " . TABLE_PRODUCTS . " p
+                                      JOIN " . TABLE_PRODUCTS_DESCRIPTION . " pd 
+                                           ON pd.products_id = p.products_id
+                                              AND pd.language_id = '" . (int)$_SESSION['languages_id'] . "'
+                                              AND trim(pd.products_name) != ''
+                                     WHERE p.products_status = '1'
+                                       AND p.products_id = '" . $pid . "'
+                                           " . PRODUCTS_CONDITIONS_P);
         
-        // Use the shop's product class to build listing data
-        // This generates ALL the same variables as product_listing_include.html
-        $product_data = $product_obj->buildDataArray($pid);
-        
-        // Add our custom fields
-        $product_data['PRODUCTS_REMOVE_LINK'] = xtc_href_link('product_compare.php', 'action=remove&products_id=' . $pid);
-        
-        $compare_products[] = $product_data;
+        if (xtc_db_num_rows($product_query, true)) {
+            $product_data = xtc_db_fetch_array($product_query, true);
+            $product_data['ID'] = $id_counter;
+            
+            // buildDataArray expects a DB result array by reference
+            // It returns the complete productData array with all listing variables
+            $listing_data = $product_obj->buildDataArray($product_data, 'thumbnail');
+            
+            // Add our custom remove link
+            $listing_data['PRODUCTS_REMOVE_LINK'] = xtc_href_link('product_compare.php', 'action=remove&products_id=' . $pid);
+            
+            // Get manufacturer name if available
+            if (!empty($product_data['manufacturers_id'])) {
+                $mfr_query = xtc_db_query("SELECT manufacturers_name FROM " . TABLE_MANUFACTURERS . " WHERE manufacturers_id = '" . (int)$product_data['manufacturers_id'] . "'");
+                if ($mfr = xtc_db_fetch_array($mfr_query)) {
+                    $listing_data['MANUFACTURER'] = $mfr['manufacturers_name'];
+                }
+            }
+            
+            $compare_products[] = $listing_data;
+            $id_counter++;
+        }
     }
 }
 
