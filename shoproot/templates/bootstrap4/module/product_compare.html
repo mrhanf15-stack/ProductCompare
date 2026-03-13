@@ -1,7 +1,9 @@
 {*
- * Product Compare v1.4.0 - Dreispaltiges Karten-Layout
+ * Product Compare v1.5.0 - Original Listing Design (3-Column)
  * Pfad: templates/bootstrap4/module/product_compare.html
- * @version   1.4.0
+ * Uses the same card design as product_listing_include.html
+ * with product options, add-to-cart, and details buttons
+ * @version   1.5.0
  * @date      2026-03-13
  *}
 
@@ -30,106 +32,230 @@
     
   {else}
     
+    {* Action buttons *}
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <a href="{$SHOP_LINK}" class="btn btn-outline-secondary">
+      <a href="{$SHOP_LINK}" class="btn btn-outline-secondary btn-sm">
         <span class="fa fa-arrow-left mr-1"></span>{$PC_BACK_BUTTON}
       </a>
-      <a href="{$CLEAR_LINK}" class="btn btn-outline-danger" onclick="return confirm('Vergleichsliste wirklich leeren?');">
+      <a href="{$CLEAR_LINK}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Vergleichsliste wirklich leeren?');">
         <span class="fa fa-trash mr-1"></span>{$PC_CLEAR_BUTTON}
       </a>
     </div>
     
-    <div class="row">
+    {* Product cards - 3 column grid like product_listing_include.html *}
+    <div class="row clearfix mb-4">
       {foreach from=$COMPARE_PRODUCTS item=product name=compare_loop}
-      <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-        <div class="card compare-card h-100 shadow-sm">
+      <div class="listingbox col-sm-6 col-md-4 mb-2">
+        <div class="card h-100">
           
-          <a href="{$product.PRODUCTS_REMOVE_LINK}" class="compare-card-remove" title="{$PC_REMOVE_BUTTON}">
-            <span class="fa fa-times-circle"></span>
+          {* Remove button (top-right corner) *}
+          <a href="{$product.PRODUCTS_REMOVE_LINK}" class="compare-remove-btn" title="{$PC_REMOVE_BUTTON}">
+            <span class="fa fa-times"></span>
           </a>
           
-          <a href="{$product.PRODUCTS_LINK}" class="text-decoration-none">
-            {if $product.PRODUCTS_IMAGE != ''}
-            <img src="{$product.PRODUCTS_IMAGE}" alt="{$product.PRODUCTS_NAME}" class="card-img-top compare-card-img p-3">
-            {else}
-            <div class="compare-card-img-placeholder p-3 text-center">
-              <span class="fa fa-image fa-4x text-muted"></span>
-            </div>
-            {/if}
-          </a>
-          
-          <div class="card-body d-flex flex-column">
-            
-            <a href="{$product.PRODUCTS_LINK}" class="text-decoration-none text-dark">
-              <h5 class="card-title compare-card-title">{$product.PRODUCTS_NAME}</h5>
-            </a>
-            
-            {if $product.MANUFACTURERS_NAME != ''}
-            <p class="text-muted small mb-2">
-              <span class="fa fa-industry mr-1"></span>{$product.MANUFACTURERS_NAME}
-            </p>
-            {/if}
-            
-            <div class="compare-card-price mb-2">
-              <strong class="text-success h5">{$product.PRODUCTS_PRICE}</strong>
-            </div>
-            
-            <div class="compare-card-meta mb-2">
-              {if $product.PRODUCTS_WEIGHT > 0}
-              <span class="badge badge-light mr-1 mb-1">
-                <span class="fa fa-balance-scale mr-1"></span>{$product.PRODUCTS_WEIGHT} kg
-              </span>
-              {/if}
-              <span class="badge {if $product.PRODUCTS_QUANTITY > 0}badge-success{else}badge-danger{/if} mr-1 mb-1">
-                {if $product.PRODUCTS_QUANTITY > 0}
-                  <span class="fa fa-check mr-1"></span>{$PC_IN_STOCK}
-                {else}
-                  <span class="fa fa-times mr-1"></span>{$PC_OUT_OF_STOCK}
-                {/if}
-              </span>
-            </div>
-            
-            {if $product.PRODUCTS_SHORT_DESCRIPTION != ''}
-            <div class="compare-card-description small text-muted mb-3 flex-grow-1">
-              {$product.PRODUCTS_SHORT_DESCRIPTION}
-            </div>
-            {/if}
-            
-            {if $product.FILTER_PROPERTIES|@count > 0}
-            <div class="compare-card-tags mb-3">
-              {foreach from=$ALL_FILTER_NAMES item=filter_name}
-                {if isset($product.FILTER_PROPERTIES.$filter_name)}
-                <div class="compare-tag-row mb-1">
-                  <small class="text-muted font-weight-bold">{$filter_name}:</small>
-                  {foreach from=$product.FILTER_PROPERTIES.$filter_name item=value}
-                  <span class="badge badge-light compare-tag">
-                    {if $value.image != ''}
-                    <img src="{$value.image}" alt="{$value.name}" class="compare-tag-icon mr-1">
-                    {/if}
-                    {$value.name}
-                  </span>
-                  {/foreach}
+          {* Product image and name - like original listing *}
+          <a class="card-body pb-2 flex-fill d-flex flex-column text-center" href="{$product.PRODUCTS_LINK}" title="{$product.PRODUCTS_NAME}">
+            <div class="lb_image w-100 mb-auto">
+              {if $product.PRODUCTS_IMAGE != ''}
+                <img class="img-fluid lazyloaded" src="{$product.PRODUCTS_IMAGE}" alt="{$product.PRODUCTS_NAME}" title="{$product.PRODUCTS_NAME}">
+              {else}
+                <div class="text-center py-4">
+                  <span class="fa fa-image fa-4x text-muted"></span>
                 </div>
-                {/if}
-              {/foreach}
+              {/if}
             </div>
+            <h2 class="lb_title lead text-secondary mt-1 mb-0">{$product.PRODUCTS_NAME}</h2>
+            {if $product.MANUFACTURERS_NAME != ''}
+              <footer class="blockquote-footer mt-1"><cite title="{$product.PRODUCTS_NAME} - {$product.MANUFACTURERS_NAME}">{$product.MANUFACTURERS_NAME}</cite></footer>
             {/if}
-            
-            <div class="mt-auto">
-              <a href="{$product.PRODUCTS_LINK}" class="btn btn-primary btn-sm btn-block mb-2">
+          </a>
+          
+          {* Short description *}
+          {if $product.PRODUCTS_SHORT_DESCRIPTION != ''}
+          <div class="px-3 pb-2">
+            <div class="lr_desc teabls mb-2 table-striped small">{$product.PRODUCTS_SHORT_DESCRIPTION}</div>
+          </div>
+          {/if}
+          
+          {* Product options / attributes *}
+          {if $product.HAS_ATTRIBUTES}
+          <div class="px-3 pb-2">
+            <form action="{$product.PRODUCTS_BUY_LINK}" method="post" id="compare-form-{$product.PRODUCTS_ID}">
+              <input type="hidden" name="action" value="buy_now">
+              <input type="hidden" name="products_id" value="{$product.PRODUCTS_ID}">
+              <input type="hidden" name="qty" value="1">
+              
+              {if $product.SHIPPING_NAME != ''}
+                <div class="small text-muted mb-2">
+                  <span class="fa fa-truck mr-1"></span>{$product.SHIPPING_NAME}
+                </div>
+              {/if}
+              
+              {* Options container - similar to multi_options_1 *}
+              <div id="options{$product.PRODUCTS_ID}" class="product-options-container mb-2">
+                {foreach from=$product.PRODUCT_OPTIONS item=options_data name=opt_outer}
+                <div class="option-group card mb-2 border">
+                  {if $product.PRODUCT_OPTIONS|@count > 1}
+                  <div class="card-header py-1 px-2 bg-light border-bottom">
+                    <small class="font-weight-bold text-dark">{$options_data.NAME}</small>
+                  </div>
+                  {/if}
+                  <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                      {* Find first available option *}
+                      {assign var="pc_first_avail" value=0}
+                      {assign var="pc_lagernd_id" value=0}
+                      {foreach from=$options_data.DATA item=item_data name=pc_find}
+                        {if $item_data.STOCK > 0 && $pc_first_avail == 0}
+                          {assign var="pc_first_avail" value=$item_data.ID}
+                        {/if}
+                        {if $item_data.STOCK > 0 && $item_data.STOCK < 99 && $pc_lagernd_id == 0}
+                          {assign var="pc_lagernd_id" value=$item_data.ID}
+                        {/if}
+                      {/foreach}
+                      {* Use lagernd if found, otherwise first available *}
+                      {if $pc_lagernd_id > 0}
+                        {assign var="pc_selected" value=$pc_lagernd_id}
+                      {else}
+                        {assign var="pc_selected" value=$pc_first_avail}
+                      {/if}
+                      
+                      {foreach from=$options_data.DATA item=item_data name=pc_opts}
+                        <div class="option-item px-2 py-1 {if !$smarty.foreach.pc_opts.last}border-bottom{/if} {if $item_data.STOCK > 0}option-available{else}option-unavailable{/if}{if $item_data.ID == $pc_selected} active{/if}">
+                          <div class="form-check mb-0">
+                            {if $item_data.STOCK > 0}
+                            <div class="option-control d-flex align-items-center w-100">
+                              <input type="radio" class="option-radio-input mr-1" 
+                                     id="rdb_{$product.PRODUCTS_ID}_{$item_data.ID}" 
+                                     name="id[{$options_data.ID}]" 
+                                     value="{$item_data.VALUES_ID}"
+                                     {if $item_data.ID == $pc_selected}checked="checked"{/if}>
+                              <div class="option-content d-flex justify-content-between align-items-center w-100">
+                                <div class="option-info">
+                                  <span class="option-text small">{$item_data.TEXT}</span>
+                                  {if $item_data.STOCK > 0}
+                                  <div class="stock-status">
+                                    {if $item_data.STOCK < 99}
+                                    <small class="text-success"><span class="fa fa-circle mr-1" style="font-size:8px"></span>Lagernd</small>
+                                    {else}
+                                    <small class="ship_text_warning"><span class="fa fa-circle mr-1" style="font-size:8px"></span>Sonderbestellung</small>
+                                    {/if}
+                                  </div>
+                                  {/if}
+                                </div>
+                                <div class="option-price text-right ml-auto">
+                                  {if $item_data.PRICE}
+                                    <small class="font-weight-bold">{$item_data.PRICE}</small>
+                                  {elseif $item_data.FULL_PRICE}
+                                    <small class="font-weight-bold">{$item_data.PREFIX} {$item_data.FULL_PRICE}</small>
+                                  {/if}
+                                </div>
+                              </div>
+                            </div>
+                            {else}
+                            <div class="option-control d-flex align-items-center w-100">
+                              <div class="mr-1" style="width:16px;height:16px;"></div>
+                              <div class="option-content d-flex justify-content-between align-items-center w-100">
+                                <div class="option-info">
+                                  <span class="option-text text-muted small">{$item_data.TEXT}</span>
+                                  <div class="stock-status">
+                                    <small class="text-danger"><span class="fa fa-circle mr-1" style="font-size:8px"></span>Ausverkauft</small>
+                                  </div>
+                                </div>
+                                <div class="option-price text-right ml-auto">
+                                  {if $item_data.PRICE}
+                                    <small class="text-muted">{$item_data.PRICE}</small>
+                                  {elseif $item_data.FULL_PRICE}
+                                    <small class="text-muted">{$item_data.PREFIX} {$item_data.FULL_PRICE}</small>
+                                  {/if}
+                                </div>
+                              </div>
+                            </div>
+                            {/if}
+                          </div>
+                        </div>
+                      {/foreach}
+                    </div>
+                  </div>
+                </div>
+                {/foreach}
+              </div>
+              
+              {* Buttons: Add to Cart + Details *}
+              <div class="lb_buttons text-center mb-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <span class="fa fa-shopping-cart mr-1"></span>{$PC_ADD_TO_CART}
+                </button>
+                <a href="{$product.PRODUCTS_LINK}" class="btn btn-outline-secondary btn-sm">
+                  <span class="fa fa-info-circle mr-1"></span>{$PC_DETAILS_BUTTON}
+                </a>
+              </div>
+            </form>
+          </div>
+          {else}
+          {* No attributes - simple buttons *}
+          <div class="p-1 text-center">
+            <div class="lb_buttons mb-2">
+              <a href="{$product.PRODUCTS_LINK}" class="btn btn-outline-secondary btn-sm">
                 <span class="fa fa-info-circle mr-1"></span>{$PC_DETAILS_BUTTON}
               </a>
-              <a href="{$product.PRODUCTS_REMOVE_LINK}" class="btn btn-outline-danger btn-sm btn-block">
-                <span class="fa fa-times mr-1"></span>{$PC_REMOVE_BUTTON}
-              </a>
             </div>
-            
           </div>
+          {/if}
+          
+          {* Card footer with price - like original listing *}
+          <div class="card-footer">
+            {if $product.SHIPPING_NAME != '' && !$product.HAS_ATTRIBUTES}
+            <div class="lb_shipping small">
+              <span class="fa fa-truck mr-1"></span>{$product.SHIPPING_NAME}
+            </div>
+            {/if}
+            <div class="lb_price text-right mb-1">
+              <span class="h5 font-weight-bold">{$product.PRODUCTS_PRICE}</span>
+            </div>
+            <div class="lb_tax text-right text-secondary small mb-1">
+              inkl. MwSt., zzgl. Versand
+            </div>
+          </div>
+          
         </div>
       </div>
       {/foreach}
     </div>
     
+    {* Bottom action buttons *}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <a href="{$SHOP_LINK}" class="btn btn-outline-secondary btn-sm">
+        <span class="fa fa-arrow-left mr-1"></span>{$PC_BACK_BUTTON}
+      </a>
+      <a href="{$CLEAR_LINK}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Vergleichsliste wirklich leeren?');">
+        <span class="fa fa-trash mr-1"></span>{$PC_CLEAR_BUTTON}
+      </a>
+    </div>
+    
   {/if}
   
 </div>
+
+{* Option click handler for compare page *}
+{literal}
+<script>
+$(document).ready(function() {
+  // Click handler for option items
+  $('.product-compare-page .option-item.option-available').on('click', function(e) {
+    var radioInput = $(this).find('input[type=radio]');
+    radioInput.prop('checked', true);
+    $(this).closest('.option-group').find('.option-item').removeClass('active');
+    $(this).addClass('active');
+    if ($(e.target).is('input[type=radio]')) return;
+  });
+  
+  // Cursor styles
+  $('.product-compare-page .option-item.option-available').css('cursor', 'pointer');
+  $('.product-compare-page .option-item.option-unavailable').css('cursor', 'default');
+  
+  // Initial active state
+  $('.product-compare-page .option-radio-input:checked').closest('.option-item').addClass('active');
+});
+</script>
+{/literal}
