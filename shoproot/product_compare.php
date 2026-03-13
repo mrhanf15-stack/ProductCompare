@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.1 - Comparison Page (Original Listing Design)
+   Product Compare v1.7.2 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
@@ -16,7 +16,7 @@
    6. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.1
+   @version   1.7.2
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
@@ -24,6 +24,12 @@ require('includes/application_top.php');
 
 // Create Smarty instance (required - application_top does NOT create it)
 $smarty = new Smarty;
+$smarty->assign('language', $_SESSION['language']);
+$smarty->assign('tpl_path', DIR_WS_BASE.'templates/'.CURRENT_TEMPLATE.'/');
+
+// Load box modules (cart, wishlist, search, languages, categories, menu etc.)
+// Same as seedfinder.php line 505
+require(DIR_FS_CATALOG.'templates/'.CURRENT_TEMPLATE.'/source/boxes.php');
 
 // Load language file
 $pc_lang_file = DIR_WS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php';
