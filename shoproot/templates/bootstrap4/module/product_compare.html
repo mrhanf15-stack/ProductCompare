@@ -1,10 +1,13 @@
 {*
- * Product Compare v1.6.4 - 3-Column Card Layout
+ * Product Compare v1.7.4 - 3-Column Card Layout
+ * - contentAnywhere support for custom content blocks
+ * - history.back() for "Weiter einkaufen" button
+ * - Images object-fit cover for equal height
  * - Legend hidden via CSS
  * - Fixed image height for alignment
  * - Short description fixed height with scroll
  * - Price/Buttons in card-footer at bottom
- * @version   1.6.4
+ * @version   1.7.4
  * @date      2026-03-13
  *}
 {assign "dummy" ""}
@@ -20,13 +23,17 @@
     {/if}
   </h1>
   
+  {* === contentAnywhere: Top Content Block === *}
+  {* Ersetze die Content-ID (z.B. 99) mit der gewuenschten coID aus dem Content Manager *}
+  {* Beispiel: {99|contentAnywhere|inserttags} *}
+  
   {if $COMPARE_COUNT == 0}
     <div class="card mb-4">
       <div class="card-body text-center py-5">
         <span class="fa fa-balance-scale fa-3x text-muted mb-3 d-block"></span>
         <h3 class="text-muted">{$PC_EMPTY_TEXT}</h3>
         <p class="text-muted">{$PC_EMPTY_HINT}</p>
-        <a href="{$SHOP_LINK}" class="btn btn-primary mt-3">
+        <a href="javascript:history.back();" class="btn btn-primary mt-3">
           <span class="fa fa-arrow-left mr-1"></span>{$PC_BACK_BUTTON}
         </a>
       </div>
@@ -36,7 +43,7 @@
     
     {* Action buttons *}
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <a href="{$SHOP_LINK}" class="btn btn-outline-secondary btn-sm">
+      <a href="javascript:history.back();" class="btn btn-outline-secondary btn-sm">
         <span class="fa fa-arrow-left mr-1"></span>{$PC_BACK_BUTTON}
       </a>
       <a href="{$CLEAR_LINK}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Vergleichsliste wirklich leeren?');">
@@ -55,7 +62,7 @@
             <span class="fa fa-times"></span>
           </a>
           
-          {* Product image - fixed height *}
+          {* Product image - fixed height, object-fit cover *}
           <a href="{$module_data.PRODUCTS_LINK}" class="card-body text-center lb_image compare-img-box">
             {if $module_data.PRODUCTS_IMAGE != ''}
               <img class="img-fluid lazyloaded" src="{$module_data.PRODUCTS_IMAGE}" alt="{$module_data.PRODUCTS_NAME|onlytext}" title="{$module_data.PRODUCTS_NAME|onlytext}">
@@ -129,7 +136,7 @@
     
     {* Bottom action buttons *}
     <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
-      <a href="{$SHOP_LINK}" class="btn btn-outline-secondary btn-sm">
+      <a href="javascript:history.back();" class="btn btn-outline-secondary btn-sm">
         <span class="fa fa-arrow-left mr-1"></span>{$PC_BACK_BUTTON}
       </a>
       <a href="{$CLEAR_LINK}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Vergleichsliste wirklich leeren?');">
@@ -138,5 +145,9 @@
     </div>
     
   {/if}
+  
+  {* === contentAnywhere: Bottom Content Block === *}
+  {* Ersetze die Content-ID (z.B. 100) mit der gewuenschten coID aus dem Content Manager *}
+  {* Beispiel: {100|contentAnywhere|inserttags} *}
   
 </div>
