@@ -1,8 +1,9 @@
 /* =========================================================================
-   Product Compare v1.7.5 - CSS
+   Product Compare v1.7.6 - CSS
    3-Column Card Layout - Aligned cards with fixed sections
-   - Images: object-fit cover for equal height cropping
+   - Images: position absolute + object-fit cover for FORCED equal height
    - Badge: right-bottom position (away from Trusted Shops widget)
+   - Listing button: same style as cart/wishlist buttons
    ========================================================================= */
 
 /* === Page Layout === */
@@ -54,23 +55,31 @@
     transform: scale(1.15);
 }
 
-/* === Product Image - Fixed Height, object-fit cover for equal cropping === */
+/* === Product Image - FORCED Fixed Height with position absolute === */
+/* The <a> tag has Bootstrap .card-body which sets flex:1 1 auto and padding.
+   We override everything to create a fixed-height container with the image
+   absolutely positioned inside, guaranteeing ALL images fill the box. */
 .product-compare-page .compare-img-box {
-    height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    flex-shrink: 0;
+    position: relative !important;
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+    overflow: hidden !important;
+    display: block !important;
+    flex: 0 0 220px !important;
+    padding: 0 !important;
 }
 
 .product-compare-page .compare-img-box img.compare-product-img {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     height: 100% !important;
     max-width: none !important;
     max-height: none !important;
     object-fit: cover !important;
-    object-position: center;
+    object-position: center !important;
 }
 
 /* === Product Title Area - Fixed Height for Table Alignment === */
@@ -173,7 +182,7 @@
     line-height: 1;
 }
 
-/* === Compare Button (on product cards) === */
+/* === Compare Button (on product cards & listing) === */
 .btn-compare {
     background: transparent;
     border: 1px solid #6c757d;
@@ -278,15 +287,10 @@
         max-width: 100%;
     }
     .product-compare-page .compare-img-box {
-        height: 180px;
-    }
-    .product-compare-page .compare-img-box img.compare-product-img {
-        width: 100% !important;
-        height: 100% !important;
-        max-width: none !important;
-        max-height: none !important;
-        object-fit: cover !important;
-        object-position: center;
+        height: 180px !important;
+        min-height: 180px !important;
+        max-height: 180px !important;
+        flex: 0 0 180px !important;
     }
     .product-compare-page .compare-desc-box {
         height: auto;
@@ -322,15 +326,10 @@
 
 @media (min-width: 992px) {
     .product-compare-page .compare-img-box {
-        height: 250px;
-    }
-    .product-compare-page .compare-img-box img.compare-product-img {
-        width: 100% !important;
-        height: 100% !important;
-        max-width: none !important;
-        max-height: none !important;
-        object-fit: cover !important;
-        object-position: center;
+        height: 250px !important;
+        min-height: 250px !important;
+        max-height: 250px !important;
+        flex: 0 0 250px !important;
     }
 }
 
