@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.9 - Comparison Page (Original Listing Design)
+   Product Compare v1.8.0 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
@@ -11,14 +11,21 @@
    2. $smarty = new Smarty (required!)
    3. Page logic (load products, assign variables)
    3. $main_content = $smarty->fetch(template)
-   4. require header.php (loads ALL box modules: cart, wishlist, search, etc.)
-      -> header.php calls autoinclude header_head/ which sets $meta_title + $meta_description
-   5. $smarty->display(index.html)
-   6. require application_bottom.php
+   4. Set $meta_title + $meta_description BEFORE header.php
+   5. require header.php (loads ALL box modules: cart, wishlist, search, etc.)
+   6. $smarty->display(index.html)
+   7. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.9
+   @version   1.8.0
    @date      2026-03-13
+   
+   v1.8.0 Changes:
+   - Meta-Tags Fix: $meta_title und $meta_description direkt VOR header.php setzen
+     (Autoinclude header_head/ war unzuverlaessig - wurde von header.php ueberschrieben)
+   - CSS: h3-Syntaxfehler behoben (brach Floating Badge Position)
+   - CSS: Tabellenhoehe auf 550px, Titel auf 1.45rem
+   - CSS: Badge-Position mit !important fuer zuverlaessige Positionierung
    
    v1.7.9 Changes:
    - Sitemap-Option entfernt (wird extern verwaltet)
@@ -30,7 +37,6 @@
    v1.7.7 Changes:
    - Meta-Titel and Meta-Description configurable via Admin backend
    - Autoinclude header_head sets meta tags for SEO
-   - Sitemap integration via autoinclude
    - Canonical URL for product compare page
    
    v1.7.6 Changes:
@@ -176,9 +182,26 @@ $smarty->caching = false;
 
 $main_content = $smarty->fetch(CURRENT_TEMPLATE . '/module/product_compare.html');
 
+// ============================================================================
+// META-TAGS FIX v1.8.0
+// Setze $meta_title und $meta_description DIREKT hier, VOR dem require header.php
+// Der Autoinclude header_head/ wurde von header.php ueberschrieben - daher
+// setzen wir die Werte jetzt direkt wie auch seedfinder.php es macht.
+// ============================================================================
+if (defined('MODULE_PRODUCT_COMPARE_META_TITLE') && MODULE_PRODUCT_COMPARE_META_TITLE != '') {
+    $meta_title = MODULE_PRODUCT_COMPARE_META_TITLE;
+} elseif (defined('PC_META_TITLE')) {
+    $meta_title = PC_META_TITLE;
+}
+
+if (defined('MODULE_PRODUCT_COMPARE_META_DESCRIPTION') && MODULE_PRODUCT_COMPARE_META_DESCRIPTION != '') {
+    $meta_description = MODULE_PRODUCT_COMPARE_META_DESCRIPTION;
+} elseif (defined('PC_META_DESCRIPTION')) {
+    $meta_description = PC_META_DESCRIPTION;
+}
+
 // Header (loads ALL box modules: cart, wishlist, search, languages, categories, footer etc.)
-// MUST be called AFTER fetch and BEFORE display - same pattern as seedfinder.php
-// Note: header.php triggers autoinclude header_head/ which sets $meta_title and $meta_description
+// MUST be called AFTER fetch and AFTER meta tags are set - same pattern as seedfinder.php
 require(DIR_WS_INCLUDES . 'header.php');
 
 // Display page using index.html (fullcontent = no sidebar)

@@ -1,18 +1,19 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.7.9 - Admin System Module
+   Product Compare v1.8.0 - Admin System Module
    
    Pfad: admin/includes/modules/system/product_compare.php
    
    Konfiguration des Produktvergleich-Moduls im Admin-Bereich.
    Admin > Module > System Module > Produktvergleich
    
+   v1.8.0: Meta-Tags Fix, CSS h3-Syntaxfehler behoben, Badge-Position Fix
    v1.7.9: Sitemap-Option entfernt (wird extern verwaltet)
    v1.7.8: Auto-Update - fehlende Konfigurationsfelder werden automatisch angelegt
    v1.7.7: Meta-Titel, Meta-Description hinzugefuegt
    
    @author    Mr. Hanf / Manus AI
-   @version   1.7.9
+   @version   1.8.0
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
