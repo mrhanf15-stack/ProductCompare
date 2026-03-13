@@ -10,11 +10,14 @@
    - Proper header.php integration for navigation
    
    @author    Mr. Hanf / Manus AI
-   @version   1.4.0
+   @version   1.4.1
    @date      2026-03-13
    -----------------------------------------------------------------------------------------*/
 
 require('includes/application_top.php');
+
+// create smarty instance (required before header.php)
+$smarty = new Smarty;
 
 // Load language file
 $pc_lang_file = DIR_WS_LANGUAGES . $_SESSION['language'] . '/extra/product_compare.php';
