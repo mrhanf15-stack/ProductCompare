@@ -1,7 +1,9 @@
 {*
- * Product Compare v2.0.1 - 3-Column Card Layout
- * - v2.0.1: Clear-Button onclick als Fallback für Event Delegation
- * - v2.0.0: Clear-Button onclick entfernt (JS Event Delegation übernimmt)
+ * Product Compare v2.0.2 - 3-Column Card Layout
+ * - v2.0.2: Smarty-sicherer onclick (ohne geschweifte Klammern)
+ *           OpCache-Hinweis: Nach Update php opcache_reset() ausfuehren!
+ * - v2.0.1: Clear-Button onclick als Fallback fuer Event Delegation
+ * - v2.0.0: Clear-Button onclick entfernt (JS Event Delegation uebernimmt)
  * - contentAnywhere support for custom content blocks
  * - history.back() for "Weiter einkaufen" button
  * - Images position absolute + object-fit cover for FORCED equal height
@@ -9,7 +11,7 @@
  * - Fixed image height for alignment
  * - Short description fixed height with scroll (550px)
  * - Price/Buttons in card-footer at bottom
- * @version   2.0.1
+ * @version   2.0.2
  * @date      2026-03-20
  *}
 {assign "dummy" ""}
@@ -25,7 +27,7 @@
     {/if}
   </h1>
 
-  {* SEO Content: Einleitung *}
+  {* SEO Content: Einleitung (Datei muss existieren, ggf. leer) *}
   {include file="module/product_compare_intro.html"}
 
   
@@ -52,7 +54,7 @@
       <a href="javascript:history.back();" class="btn btn-outline-secondary btn-sm">
         <span class="fa fa-arrow-left mr-1"></span>{$PC_BACK_BUTTON}
       </a>
-      <a href="{$CLEAR_LINK}" class="btn btn-outline-danger btn-sm" onclick="if(confirm('Vergleichsliste wirklich leeren?')){ProductCompare.clearAll();}return false;">
+      <a href="{$CLEAR_LINK}" class="btn btn-outline-danger btn-sm" onclick="event.preventDefault();if(confirm('Vergleichsliste wirklich leeren?'))ProductCompare.clearAll();">
         <span class="fa fa-trash mr-1"></span>{$PC_CLEAR_BUTTON}
       </a>
     </div>
@@ -145,14 +147,14 @@
       <a href="javascript:history.back();" class="btn btn-outline-secondary btn-sm">
         <span class="fa fa-arrow-left mr-1"></span>{$PC_BACK_BUTTON}
       </a>
-      <a href="{$CLEAR_LINK}" class="btn btn-outline-danger btn-sm" onclick="if(confirm('Vergleichsliste wirklich leeren?')){ProductCompare.clearAll();}return false;">
+      <a href="{$CLEAR_LINK}" class="btn btn-outline-danger btn-sm" onclick="event.preventDefault();if(confirm('Vergleichsliste wirklich leeren?'))ProductCompare.clearAll();">
         <span class="fa fa-trash mr-1"></span>{$PC_CLEAR_BUTTON}
       </a>
     </div>
     
   {/if}
   
-    {* SEO Content: Hauptteil *}
+    {* SEO Content: Hauptteil (Datei muss existieren, ggf. leer) *}
   {include file="module/product_compare_main.html"}
 
   {* === contentAnywhere: Bottom Content Block === *}
