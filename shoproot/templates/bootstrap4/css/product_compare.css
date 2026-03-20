@@ -85,7 +85,9 @@
 
 /* === Product Title Area - Fixed Height for Table Alignment === */
 .product-compare-page .card-body.pt-0.pb-1:not(.compare-desc-box) {
-    min-height: 55px;
+    min-height: 80px;
+    max-height: 80px;
+    overflow: hidden;
     flex-shrink: 0;
 }
 
