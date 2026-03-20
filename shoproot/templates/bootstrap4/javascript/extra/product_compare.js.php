@@ -5,6 +5,10 @@
    Hookpoint: templates/bootstrap4/javascript/extra/
    Wird automatisch auf jeder Seite geladen.
 
+   v1.9.3: BUGFIX - Clear-Button Selector fix + clearAll() global
+           - handleClearClick: Selector erweitert für HTML-encoded URLs und CSS-Klasse
+           - ProductCompare.clearAll() als globale Funktion für onclick-Aufrufe
+           - Funktioniert mit und ohne onclick im Template
    v1.9.2: BUGFIX - FPC-sichere Initialisierung
            - currentProducts wird IMMER per AJAX geladen (nicht aus gecachtem PHP)
            - Cookie-Restore nur wenn Server-Session leer + Cookie vorhanden
@@ -23,7 +27,7 @@
    v1.2.2: Bugfixes
 
    @author    Mr. Hanf / Manus AI
-   @version   1.9.2
+   @version   1.9.3
    @date      2026-03-20
    -----------------------------------------------------------------------------------------*/
 
@@ -361,16 +365,19 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         }
     }
 
-    // === v1.9.1: Clear-Button Click-Handler (Event Delegation) ===
+    // === v1.9.3: Clear-Button Click-Handler (Event Delegation) ===
+    // Erkennt Clear-Links über mehrere Selektoren (HTML-encoded URLs, CSS-Klasse)
     function handleClearClick(e) {
-        // Fange Klicks auf Links mit action=clear ab
+        // Fange Klicks auf Clear-Links ab (mehrere Selektoren für Kompatibilität)
         var link = e.target.closest('a[href*="action=clear"]');
+        if (!link) link = e.target.closest('a.btn-outline-danger[href*="product_compare"]');
+        if (!link) link = e.target.closest('a.btn-outline-danger[href*="vergleich"]');
         if (!link) return;
 
         e.preventDefault();
         e.stopPropagation();
 
-        // Confirm-Dialog beibehalten
+        // Confirm-Dialog
         if (confirm('Vergleichsliste wirklich leeren?')) {
             clearCompare(true); // true = Seite nach Clear neu laden
         }
@@ -437,6 +444,8 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         toggle: toggleCompare,
         update: updateAllButtons,
         clear: clearCompare,
+        // v1.9.3: clearAll() für onclick-Aufrufe im Template
+        clearAll: function() { clearCompare(true); },
         getProducts: function() { return PC.currentProducts; },
         getCount: function() { return PC.currentProducts.length; },
         // v1.9.0: Cookie-Funktionen auch extern verfügbar
