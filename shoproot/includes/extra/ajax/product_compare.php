@@ -1,8 +1,19 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.3.0 - AJAX Endpoint
+   Product Compare v2.0.0 - AJAX Endpoint
    Hookpoint: includes/extra/ajax/
    Loaded via: ajax.php?ext=product_compare
+
+   v2.0.0: BUGFIX - Clear löscht jetzt auch das Cookie 'pc_compare_ids'
+           - Ohne Cookie-Löschung stellte der Cookie-Restore die Session sofort wieder her
+           - Add/Remove synchronisieren das Cookie serverseitig
+   v1.9.0: Cookie-basierte Persistenz
+           - Bei AJAX-Aufrufen ebenfalls Cookie-Restore durchführen
+           - Stellt sicher, dass nach Logout+Login auch AJAX-Calls die Liste kennen
+
+   @author    Mr. Hanf / Manus AI
+   @version   2.0.0
+   @date      2026-03-20
    -----------------------------------------------------------------------------------------*/
 
 function product_compare() {
@@ -11,16 +22,42 @@ function product_compare() {
         $_SESSION['product_compare'] = array();
     }
 
-    $max_products = 6;
-    if (defined('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS')) {
-        $max_products = (int)MODULE_PRODUCT_COMPARE_MAX_PRODUCTS;
-    }
-
     $sub_action = '';
     if (isset($_GET['sub_action'])) {
         $sub_action = $_GET['sub_action'];
     } elseif (isset($_POST['sub_action'])) {
         $sub_action = $_POST['sub_action'];
+    }
+
+    // === Cookie-Restore auch bei AJAX-Aufrufen ===
+    // ABER: Nicht bei 'clear' Action! Sonst wird die Session sofort wieder befüllt.
+    if ($sub_action !== 'clear') {
+        if (empty($_SESSION['product_compare']) && isset($_COOKIE['pc_compare_ids']) && $_COOKIE['pc_compare_ids'] !== '') {
+            $pc_cookie_raw = $_COOKIE['pc_compare_ids'];
+            $pc_cookie_ids = array_map('intval', explode(',', $pc_cookie_raw));
+            $pc_cookie_ids = array_filter($pc_cookie_ids, function($id) { return $id > 0; });
+            $pc_cookie_ids = array_unique($pc_cookie_ids);
+
+            if (!empty($pc_cookie_ids)) {
+                $pc_ids_str = implode(',', array_map('intval', $pc_cookie_ids));
+                $pc_check_query = xtc_db_query(
+                    "SELECT products_id FROM " . TABLE_PRODUCTS .
+                    " WHERE products_id IN (" . $pc_ids_str . ") AND products_status = 1"
+                );
+                $pc_valid_ids = array();
+                while ($pc_row = xtc_db_fetch_array($pc_check_query)) {
+                    $pc_valid_ids[] = (int)$pc_row['products_id'];
+                }
+                if (!empty($pc_valid_ids)) {
+                    $_SESSION['product_compare'] = array_values($pc_valid_ids);
+                }
+            }
+        }
+    }
+
+    $max_products = 6;
+    if (defined('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS')) {
+        $max_products = (int)MODULE_PRODUCT_COMPARE_MAX_PRODUCTS;
     }
 
     $product_id = 0;
@@ -51,6 +88,8 @@ function product_compare() {
                 $response['success'] = true;
                 $response['message'] = 'added';
             }
+            // v2.0.0: Cookie serverseitig synchronisieren
+            _pc_sync_cookie($_SESSION['product_compare']);
         } else {
             $response['message'] = 'invalid_product';
         }
@@ -65,9 +104,16 @@ function product_compare() {
             } else {
                 $response['message'] = 'not_in_list';
             }
+            // v2.0.0: Cookie serverseitig synchronisieren
+            _pc_sync_cookie($_SESSION['product_compare']);
         }
     } elseif ($sub_action == 'clear') {
+        // v2.0.0: Session UND Cookie leeren
         $_SESSION['product_compare'] = array();
+        // Cookie löschen (serverseitig)
+        setcookie('pc_compare_ids', '', time() - 3600, '/', '', true, false);
+        // Auch im aktuellen Request entfernen, damit Cookie-Restore nicht greift
+        unset($_COOKIE['pc_compare_ids']);
         $response['success'] = true;
         $response['message'] = 'cleared';
     } elseif ($sub_action == 'list') {
@@ -168,5 +214,14 @@ function product_compare() {
     $response['products'] = array_values($_SESSION['product_compare']);
 
     return $response;
+}
+
+/**
+ * v2.0.0: Helper - Cookie serverseitig synchronisieren
+ * Setzt das Cookie 'pc_compare_ids' mit den aktuellen Session-IDs
+ */
+function _pc_sync_cookie($ids) {
+    $value = implode(',', array_map('intval', $ids));
+    setcookie('pc_compare_ids', $value, time() + (30 * 24 * 60 * 60), '/', '', true, false);
 }
 ?>

@@ -1,6 +1,6 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v1.8.0 - Comparison Page (Original Listing Design)
+   Product Compare v2.0.0 - Comparison Page (Original Listing Design)
    File: product_compare.php (shoproot)
    
    Uses the shop's own product class buildDataArray() to generate
@@ -17,37 +17,21 @@
    7. require application_bottom.php
    
    @author    Mr. Hanf / Manus AI
-   @version   1.8.0
-   @date      2026-03-13
+   @version   2.0.0
+   @date      2026-03-20
+   
+   v2.0.0 Changes:
+   - BUGFIX: Clear-Action löscht jetzt auch das Cookie 'pc_compare_ids'
+   - Ohne Cookie-Löschung stellte der Cookie-Restore (header_body) die Session
+     sofort nach dem Redirect wieder her → Badge zeigte alten Count
+   - Remove-Action synchronisiert Cookie serverseitig
    
    v1.8.0 Changes:
    - Meta-Tags Fix: $meta_title und $meta_description direkt VOR header.php setzen
-     (Autoinclude header_head/ war unzuverlaessig - wurde von header.php ueberschrieben)
-   - CSS: h3-Syntaxfehler behoben (brach Floating Badge Position)
-   - CSS: Tabellenhoehe auf 550px, Titel auf 1.45rem
-   - CSS: Badge-Position mit !important fuer zuverlaessige Positionierung
+   - CSS: h3-Syntaxfehler behoben, Badge-Position mit !important
    
    v1.7.9 Changes:
    - Sitemap-Option entfernt (wird extern verwaltet)
-   - Auto-Update raeumt altes Sitemap-Feld automatisch auf
-   
-   v1.7.8 Changes:
-   - Auto-Update: fehlende Konfigurationsfelder werden automatisch angelegt
-   
-   v1.7.7 Changes:
-   - Meta-Titel and Meta-Description configurable via Admin backend
-   - Autoinclude header_head sets meta tags for SEO
-   - Canonical URL for product compare page
-   
-   v1.7.6 Changes:
-   - Image fix: position absolute + object-fit cover to FORCE equal height for ALL images
-   - Listing button code snippet provided for product_listing.html integration
-   
-   v1.7.5 Changes:
-   - contentAnywhere modifier support (use {ID|contentAnywhere|inserttags} in template)
-   - Product images: object-fit cover with !important to force equal height even for small images
-   - Removed img-fluid class that prevented small images from scaling up
-   - Back button: "Weiter einkaufen" with history.back()
    -----------------------------------------------------------------------------------------*/
 
 require('includes/application_top.php');
@@ -58,7 +42,6 @@ $smarty->assign('language', $_SESSION['language']);
 $smarty->assign('tpl_path', DIR_WS_BASE.'templates/'.CURRENT_TEMPLATE.'/');
 
 // Load box modules (cart, wishlist, search, languages, categories, menu etc.)
-// Same as seedfinder.php line 505
 require(DIR_FS_CATALOG.'templates/'.CURRENT_TEMPLATE.'/source/boxes.php');
 
 // Load language file
@@ -80,12 +63,23 @@ if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['produc
         unset($_SESSION['product_compare'][$key]);
         $_SESSION['product_compare'] = array_values($_SESSION['product_compare']);
     }
+    // v2.0.0: Cookie synchronisieren nach Remove
+    $pc_cookie_value = implode(',', array_map('intval', $_SESSION['product_compare']));
+    if (!empty($_SESSION['product_compare'])) {
+        setcookie('pc_compare_ids', $pc_cookie_value, time() + (30 * 24 * 60 * 60), '/', '', true, false);
+    } else {
+        // Letztes Produkt entfernt → Cookie löschen
+        setcookie('pc_compare_ids', '', time() - 3600, '/', '', true, false);
+    }
     xtc_redirect(xtc_href_link('product_compare.php'));
 }
 
 // Action: clear list
 if (isset($_GET['action']) && $_GET['action'] == 'clear') {
     $_SESSION['product_compare'] = array();
+    // v2.0.0: Cookie löschen - WICHTIG! Ohne dies stellt header_body die Session wieder her
+    setcookie('pc_compare_ids', '', time() - 3600, '/', '', true, false);
+    unset($_COOKIE['pc_compare_ids']);
     xtc_redirect(xtc_href_link('product_compare.php'));
 }
 
@@ -140,8 +134,6 @@ if (!empty($_SESSION['product_compare'])) {
             $product_data = xtc_db_fetch_array($product_query, true);
             $product_data['ID'] = $id_counter;
             
-            // buildDataArray expects a DB result array by reference
-            // It returns the complete productData array with all listing variables
             $listing_data = $product_obj->buildDataArray($product_data, 'thumbnail');
             
             // Add our custom remove link
@@ -184,9 +176,6 @@ $main_content = $smarty->fetch(CURRENT_TEMPLATE . '/module/product_compare.html'
 
 // ============================================================================
 // META-TAGS FIX v1.8.0
-// Setze $meta_title und $meta_description DIREKT hier, VOR dem require header.php
-// Der Autoinclude header_head/ wurde von header.php ueberschrieben - daher
-// setzen wir die Werte jetzt direkt wie auch seedfinder.php es macht.
 // ============================================================================
 if (defined('MODULE_PRODUCT_COMPARE_META_TITLE') && MODULE_PRODUCT_COMPARE_META_TITLE != '') {
     $meta_title = MODULE_PRODUCT_COMPARE_META_TITLE;
@@ -200,11 +189,10 @@ if (defined('MODULE_PRODUCT_COMPARE_META_DESCRIPTION') && MODULE_PRODUCT_COMPARE
     $meta_description = PC_META_DESCRIPTION;
 }
 
-// Header (loads ALL box modules: cart, wishlist, search, languages, categories, footer etc.)
-// MUST be called AFTER fetch and AFTER meta tags are set - same pattern as seedfinder.php
+// Header
 require(DIR_WS_INCLUDES . 'header.php');
 
-// Display page using index.html (fullcontent = no sidebar)
+// Display page
 $smarty->assign('main_content', $main_content);
 $smarty->assign('fullcontent', true);
 $smarty->caching = 0;
