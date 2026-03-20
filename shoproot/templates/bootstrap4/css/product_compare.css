@@ -94,11 +94,13 @@
     line-height: 1.3;
 }
 
-/* === Short Description - Fixed Height with Scroll === */
+/* === Short Description - Fixed Height with Scroll, top-aligned === */
 .product-compare-page .compare-desc-box {
     height: 550px;
     overflow-y: auto;
     flex-shrink: 0;
+    align-self: flex-start;
+    width: 100%;
 }
 
 .product-compare-page .compare-desc-box .lr_desc {

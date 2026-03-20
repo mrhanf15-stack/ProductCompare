@@ -1,5 +1,6 @@
 {*
- * Product Compare v2.0.2 - 3-Column Card Layout
+ * Product Compare v2.0.3 - 3-Column Card Layout
+ * - v2.0.3: H2 mt-3, Short Description oben ausgerichtet (align-self-start)
  * - v2.0.2: Smarty-sicherer onclick (ohne geschweifte Klammern)
  *           OpCache-Hinweis: Nach Update php opcache_reset() ausfuehren!
  * - v2.0.1: Clear-Button onclick als Fallback fuer Event Delegation
@@ -11,7 +12,7 @@
  * - Fixed image height for alignment
  * - Short description fixed height with scroll (550px)
  * - Price/Buttons in card-footer at bottom
- * @version   2.0.2
+ * @version   2.0.3
  * @date      2026-03-20
  *}
 {assign "dummy" ""}
@@ -79,7 +80,7 @@
           
           {* Product title and manufacturer *}
           <div class="card-body pt-0 pb-1">
-            <h2 class="lb_title lead text-secondary mb-1"><a href="{$module_data.PRODUCTS_LINK}">{$module_data.PRODUCTS_NAME}</a></h2>
+            <h2 class="lb_title lead text-secondary mb-1 mt-3"><a href="{$module_data.PRODUCTS_LINK}">{$module_data.PRODUCTS_NAME}</a></h2>
             {if !empty($module_data.MANUFACTURER)}
               <footer class="blockquote-footer mb-1"><cite title="{$module_data.PRODUCTS_NAME|onlytext} - {$module_data.MANUFACTURER|onlytext}">{$module_data.MANUFACTURER}</cite></footer>
             {/if}
@@ -87,7 +88,7 @@
           
           {* Short description - fixed height with scroll *}
           {if !empty($module_data.PRODUCTS_SHORT_DESCRIPTION)}
-          <div class="card-body pt-0 pb-1 compare-desc-box">
+          <div class="card-body pt-0 pb-1 compare-desc-box align-self-start">
             <div class="lr_desc teabls table-striped">{$module_data.PRODUCTS_SHORT_DESCRIPTION}</div>
           </div>
           {/if}
