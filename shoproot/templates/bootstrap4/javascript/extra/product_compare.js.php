@@ -5,6 +5,10 @@
    Hookpoint: templates/bootstrap4/javascript/extra/
    Wird automatisch auf jeder Seite geladen.
 
+   v1.9.2: BUGFIX - FPC-sichere Initialisierung
+           - currentProducts wird IMMER per AJAX geladen (nicht aus gecachtem PHP)
+           - Cookie-Restore nur wenn Server-Session leer + Cookie vorhanden
+           - Verhindert dass FPC gecachte Produkt-IDs das Cookie wieder setzen
    v1.9.1: BUGFIX - "Liste leeren" per AJAX statt Page-Link
            - Clear löscht Cookie clientseitig (pcClearCookie)
            - Clear löscht Cookie serverseitig (AJAX sub_action=clear)
@@ -19,7 +23,7 @@
    v1.2.2: Bugfixes
 
    @author    Mr. Hanf / Manus AI
-   @version   1.9.1
+   @version   1.9.2
    @date      2026-03-20
    -----------------------------------------------------------------------------------------*/
 
@@ -55,7 +59,7 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         ajaxUrl: '<?php echo (defined('DIR_WS_CATALOG') ? DIR_WS_CATALOG : '/'); ?>ajax.php?ext=product_compare',
         compareUrl: '<?php echo xtc_href_link("product_compare.php"); ?>',
         maxProducts: <?php echo (defined('MODULE_PRODUCT_COMPARE_MAX_PRODUCTS') ? (int)MODULE_PRODUCT_COMPARE_MAX_PRODUCTS : 6); ?>,
-        currentProducts: <?php echo json_encode(isset($_SESSION['product_compare']) ? array_values($_SESSION['product_compare']) : array()); ?>,
+        currentProducts: [], // v1.9.2: IMMER leer initialisieren (FPC-sicher), wird per AJAX geladen
 
         // Texte
         text: {
@@ -73,49 +77,70 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         skuMap: {}
     };
 
-    // === Cookie-Restore beim Seitenaufruf ===
-    // Wenn PHP-Session leer ist (z.B. nach Logout+Login), aber Cookie noch Daten hat:
-    // → IDs aus Cookie laden und per AJAX in die Session schreiben
-    (function cookieRestore() {
-        if (PC.currentProducts.length === 0) {
-            var cookieIds = pcLoadCookie();
-            if (cookieIds.length > 0) {
-                // Sofort lokal setzen für schnelle UI-Reaktion
-                PC.currentProducts = cookieIds;
+    // === v1.9.2: FPC-sichere Initialisierung per AJAX ===
+    // currentProducts ist immer leer (FPC-sicher).
+    // Beim Seitenaufruf wird die echte Liste per AJAX vom Server geholt.
+    // Wenn Server-Session leer aber Cookie vorhanden → Cookie-Restore.
+    var initDone = false;
+    function initFromServer() {
+        ajaxCompare('list', null, function(data) {
+            if (data.success) {
+                var serverProducts = (data.products || []).map(Number);
+                var serverCount = data.count || 0;
 
-                // Per AJAX die IDs in die Server-Session schreiben
-                var restoreCount = 0;
-                var totalToRestore = cookieIds.length;
+                if (serverCount > 0) {
+                    // Server hat Produkte → übernehmen + Cookie synchronisieren
+                    PC.currentProducts = serverProducts;
+                    pcSaveCookie(PC.currentProducts);
+                    updateBadge(serverCount);
+                    updateAllButtons();
+                    initDone = true;
+                } else {
+                    // Server-Session leer → Cookie prüfen für Restore
+                    var cookieIds = pcLoadCookie();
+                    if (cookieIds.length > 0) {
+                        // Cookie hat Daten → per AJAX in Session wiederherstellen
+                        var restoreCount = 0;
+                        var totalToRestore = cookieIds.length;
 
-                cookieIds.forEach(function(pid) {
-                    var url = PC.ajaxUrl + '&sub_action=add&products_id=' + pid;
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', url, true);
-                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4) {
-                            restoreCount++;
-                            if (restoreCount >= totalToRestore) {
-                                // Nach dem letzten Restore: aktuelle Liste vom Server holen
-                                ajaxCompare('list', null, function(data) {
-                                    if (data.success) {
-                                        PC.currentProducts = (data.products || []).map(Number);
-                                        pcSaveCookie(PC.currentProducts);
-                                        updateBadge(PC.currentProducts.length);
-                                        updateAllButtons();
+                        // Sofort lokal setzen für schnelle UI-Reaktion
+                        PC.currentProducts = cookieIds;
+                        updateBadge(cookieIds.length);
+                        updateAllButtons();
+
+                        cookieIds.forEach(function(pid) {
+                            var url = PC.ajaxUrl + '&sub_action=add&products_id=' + pid;
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('GET', url, true);
+                            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                            xhr.onreadystatechange = function() {
+                                if (xhr.readyState === 4) {
+                                    restoreCount++;
+                                    if (restoreCount >= totalToRestore) {
+                                        ajaxCompare('list', null, function(data2) {
+                                            if (data2.success) {
+                                                PC.currentProducts = (data2.products || []).map(Number);
+                                                pcSaveCookie(PC.currentProducts);
+                                                updateBadge(PC.currentProducts.length);
+                                                updateAllButtons();
+                                            }
+                                        });
                                     }
-                                });
-                            }
-                        }
-                    };
-                    xhr.send();
-                });
+                                }
+                            };
+                            xhr.send();
+                        });
+                    } else {
+                        // Beides leer → nichts zu tun
+                        PC.currentProducts = [];
+                        updateBadge(0);
+                        updateAllButtons();
+                    }
+                    initDone = true;
+                }
             }
-        } else {
-            // Session hat Daten → Cookie synchronisieren (falls veraltet)
-            pcSaveCookie(PC.currentProducts);
-        }
-    })();
+        });
+    }
 
     // === Toast-Benachrichtigung ===
     var toastEl = null;
@@ -353,11 +378,11 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
 
     // === Initialisierung ===
     function init() {
-        // Badge initialisieren
-        updateBadge(PC.currentProducts.length);
+        // v1.9.2: Badge startet bei 0, wird per AJAX aktualisiert
+        updateBadge(0);
 
-        // Initiale Button-Status setzen
-        updateAllButtons();
+        // v1.9.2: Echte Produkt-Liste per AJAX vom Server holen (FPC-sicher)
+        initFromServer();
 
         // Seedfinder SKU-Buttons auflösen
         initSeedfinderButtons();
