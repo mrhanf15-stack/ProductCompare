@@ -1,21 +1,25 @@
 <?php
 /* -----------------------------------------------------------------------------------------
-   Product Compare v2.0.0 - JavaScript (als .js.php für Smarty-Variablen)
+   Product Compare v1.9.1 - JavaScript (als .js.php für Smarty-Variablen)
 
    Hookpoint: templates/bootstrap4/javascript/extra/
    Wird automatisch auf jeder Seite geladen.
 
-   v2.0.0: BUGFIX - "Liste leeren" per AJAX statt Page-Link
+   v1.9.1: BUGFIX - "Liste leeren" per AJAX statt Page-Link
            - Clear löscht Cookie clientseitig (pcClearCookie)
            - Clear löscht Cookie serverseitig (AJAX sub_action=clear)
            - Badge wird sofort auf 0 aktualisiert
            - Seite wird nach AJAX-Clear neu geladen
-           - Einzelnes Remove aktualisiert Badge + Cookie sofort
    v1.9.0: Cookie-basierte Persistenz - Vergleichsliste überlebt Logout/Login
+           - pcSaveCookie(): Speichert IDs als Cookie (30 Tage)
+           - pcLoadCookie(): Liest IDs aus Cookie
+           - Sync bei jedem add/remove/clear
+           - Restore beim Seitenaufruf wenn Session leer aber Cookie vorhanden
    v1.2.0: Neuer Ansatz - Buttons direkt in Smarty-Templates
+   v1.2.2: Bugfixes
 
    @author    Mr. Hanf / Manus AI
-   @version   2.0.0
+   @version   1.9.1
    @date      2026-03-20
    -----------------------------------------------------------------------------------------*/
 
@@ -202,6 +206,7 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
 
     // === Produkt hinzufügen/entfernen (Toggle) ===
     function toggleCompare(productId, button) {
+        // Wenn productId eine SKU ist (enthält Buchstaben), erst auflösen
         if (isNaN(productId)) {
             resolveProductId(productId, function(resolvedId) {
                 doToggle(resolvedId, button);
@@ -247,19 +252,19 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         }
     }
 
-    // === v2.0.0: Liste leeren per AJAX ===
+    // === v1.9.1: Liste leeren per AJAX ===
     function clearCompare(reloadPage) {
         // 1. Cookie sofort clientseitig löschen
         pcClearCookie();
-        
+
         // 2. Lokale Liste leeren
         PC.currentProducts = [];
-        
+
         // 3. Badge sofort aktualisieren
         updateBadge(0);
         updateAllButtons();
-        
-        // 4. Server-Session per AJAX leeren
+
+        // 4. Server-Session per AJAX leeren (löscht auch Cookie serverseitig)
         ajaxCompare('clear', null, function(data) {
             if (data.success) {
                 showToast(PC.text.msgCleared, 'info');
@@ -292,15 +297,18 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
 
     // === Seedfinder-Karten: SKU-basierte Buttons initialisieren ===
     function initSeedfinderButtons() {
+        // Seedfinder-Karten haben data-sku statt data-product-id
         var skuButtons = document.querySelectorAll('.btn-compare[data-sku]:not([data-product-id])');
 
         skuButtons.forEach(function(btn) {
             var sku = btn.getAttribute('data-sku');
             if (!sku) return;
 
+            // SKU → products_id auflösen
             resolveProductId(sku, function(productId) {
                 btn.setAttribute('data-product-id', productId);
 
+                // Prüfe ob das Produkt bereits im Vergleich ist
                 var isInList = PC.currentProducts.indexOf(parseInt(productId)) !== -1;
                 if (isInList) {
                     btn.classList.add('active');
@@ -328,15 +336,15 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         }
     }
 
-    // === v2.0.0: Clear-Button Click-Handler (Event Delegation) ===
+    // === v1.9.1: Clear-Button Click-Handler (Event Delegation) ===
     function handleClearClick(e) {
         // Fange Klicks auf Links mit action=clear ab
         var link = e.target.closest('a[href*="action=clear"]');
         if (!link) return;
-        
+
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Confirm-Dialog beibehalten
         if (confirm('Vergleichsliste wirklich leeren?')) {
             clearCompare(true); // true = Seite nach Clear neu laden
@@ -356,11 +364,11 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
 
         // Event Delegation für alle Vergleichen-Buttons
         document.addEventListener('click', handleCompareClick);
-        
-        // v2.0.0: Event Delegation für Clear-Buttons
+
+        // v1.9.1: Event Delegation für Clear-Buttons
         document.addEventListener('click', handleClearClick);
 
-        // MutationObserver für dynamisch geladene Seedfinder-Karten
+        // MutationObserver für dynamisch geladene Seedfinder-Karten (AJAX/Pagination)
         var observer = new MutationObserver(function(mutations) {
             var shouldUpdate = false;
             mutations.forEach(function(mutation) {
@@ -406,6 +414,7 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
         clear: clearCompare,
         getProducts: function() { return PC.currentProducts; },
         getCount: function() { return PC.currentProducts.length; },
+        // v1.9.0: Cookie-Funktionen auch extern verfügbar
         saveCookie: function() { pcSaveCookie(PC.currentProducts); },
         clearCookie: pcClearCookie
     };
