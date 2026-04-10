@@ -14,7 +14,7 @@
    v1.0.1: DIR_FS_LANGUAGES → DIR_WS_LANGUAGES (korrekte Konstante in modified)
 
    @author    Mr. Hanf / Manus AI
-   @version   1.9.0
+   @version   2.1.0
    @date      2026-03-14
    -----------------------------------------------------------------------------------------*/
 
@@ -98,7 +98,7 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
     // Floating Compare Badge HTML mit Position-Klasse
     echo '<div id="product-compare-badge" class="product-compare-badge pc-pos-' . $pc_badge_position . ($pc_count > 0 ? ' active' : '') . '" title="' . (defined('PC_BADGE_TITLE') ? PC_BADGE_TITLE : 'Produktvergleich') . '">';
     echo '  <a href="' . $pc_compare_url . '" class="compare-badge-link">';
-    echo '    <span class="fa fa-balance-scale"></span>';
+    echo '    <span class="fa-solid fa-scale-balanced"></span>';
     echo '    <span class="compare-count">' . $pc_count . '</span>';
     echo '  </a>';
     echo '</div>';
