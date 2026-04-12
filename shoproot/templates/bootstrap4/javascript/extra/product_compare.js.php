@@ -463,10 +463,11 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     Floating Seedfinder Button v1.1.0
+     Floating Seedfinder Button v1.2.0
      Integriert in product_compare.js.php da auto_include das separate
      Script nicht zuverlaessig laedt (Compactor-Problem).
      Alle Styles per CSS-Variablen (--tpl-sf-float-*) aus dem Konfigurator.
+     v1.2.0: Ein/Aus-Toggle via --tpl-sf-float-display (Konfigurator).
      ═══════════════════════════════════════════════════════════════════════ -->
 <script>
 (function() {
@@ -478,6 +479,10 @@ if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS ==
 
     // Prüfe ob der Button schon existiert (FPC-Schutz)
     if (document.getElementById('mrh-seedfinder-float')) return;
+
+    // Ein/Aus-Toggle: Prüfe CSS-Variable --tpl-sf-float-display
+    var displayVal = getComputedStyle(document.documentElement).getPropertyValue('--tpl-sf-float-display').trim();
+    if (displayVal === 'none') return;
 
     // === Badge-Element erstellen ===
     var badge = document.createElement('div');
