@@ -36,7 +36,7 @@
 
 if (defined('MODULE_PRODUCT_COMPARE_STATUS') && MODULE_PRODUCT_COMPARE_STATUS == 'true'):
 ?>
-<link rel="stylesheet" href="<?php echo (defined('DIR_WS_CATALOG') ? DIR_WS_CATALOG : '/'); ?>templates/bootstrap4/css/product_compare.css">
+<link rel="stylesheet" href="<?php echo (defined('DIR_WS_CATALOG') ? DIR_WS_CATALOG : '/'); ?>templates/<?php echo defined('CURRENT_TEMPLATE') ? CURRENT_TEMPLATE : 'bootstrap4'; ?>/css/product_compare.css">
 <script>
 (function() {
     'use strict';
